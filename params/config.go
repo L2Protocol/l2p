@@ -330,7 +330,7 @@ var (
 			Prague: DefaultPragueBlobConfigBSC,
 		},
 	}
-	
+
 	L2PChainConfig = &ChainConfig{
 		ChainID:             big.NewInt(56),
 		HomesteadBlock:      big.NewInt(0),
