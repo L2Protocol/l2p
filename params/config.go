@@ -376,7 +376,7 @@ var (
 			Cancun: DefaultCancunBlobConfig,
 			Prague: DefaultPragueBlobConfigBSC,
 		},
-	}	
+	}
 
 	ParliaTestChainConfig = &ChainConfig{
 		ChainID:             big.NewInt(2),
