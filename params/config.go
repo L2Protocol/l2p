@@ -650,7 +650,7 @@ var NetworkNames = map[string]string{
 	BSCChainConfig.ChainID.String():     "bsc",
 	ChapelChainConfig.ChainID.String():  "chapel",
 	RialtoChainConfig.ChainID.String():  "rialto",
-	L2PChainConfig.ChainID.String():     "l2p",	
+	L2PChainConfig.ChainID.String():     "l2p",
 }
 
 // ChainConfig is the core config which determines the blockchain settings.
