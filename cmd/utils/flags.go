@@ -2262,7 +2262,7 @@ func SetEthConfig(ctx *cli.Context, stack *node.Node, cfg *ethconfig.Config) {
 		SetDNSDiscoveryDefaults(cfg, params.BSCGenesisHash)
 	case ctx.Bool(L2PMainnetFlag.Name):
 		if !ctx.IsSet(NetworkIdFlag.Name) {
-			cfg.NetworkId = 56
+			cfg.NetworkId = 12216
 		}
 		cfg.Genesis = core.DefaultL2PGenesisBlock()
 		SetDNSDiscoveryDefaults(cfg, params.L2PGenesisHash)
