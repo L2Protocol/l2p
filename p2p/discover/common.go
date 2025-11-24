@@ -53,6 +53,8 @@ func ParseEthFilter(chain string) (NodeFilterFunc, error) {
 	switch chain {
 	case "bsc":
 		filter = forkid.NewStaticFilter(params.BSCChainConfig, core.DefaultBSCGenesisBlock().ToBlock())
+	case "l2p":
+		filter = forkid.NewStaticFilter(params.L2PChainConfig, core.DefaultL2PGenesisBlock().ToBlock())
 	case "chapel":
 		filter = forkid.NewStaticFilter(params.ChapelChainConfig, core.DefaultChapelGenesisBlock().ToBlock())
 	default:
@@ -80,6 +82,8 @@ func GetEthEntry(chain string) (enr.Entry, error) {
 	switch chain {
 	case "bsc":
 		eth.ForkID = forkid.NewID(params.BSCChainConfig, core.DefaultBSCGenesisBlock().ToBlock(), uint64(0), uint64(0))
+	case "l2p":
+		eth.ForkID = forkid.NewID(params.L2PChainConfig, core.DefaultL2PGenesisBlock().ToBlock(), uint64(0), uint64(0))
 	case "chapel":
 		eth.ForkID = forkid.NewID(params.ChapelChainConfig, core.DefaultChapelGenesisBlock().ToBlock(), uint64(0), uint64(0))
 	default:

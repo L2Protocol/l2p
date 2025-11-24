@@ -174,8 +174,13 @@ var (
 		Category: flags.EthCategory,
 	}
 	BSCMainnetFlag = &cli.BoolFlag{
-		Name:     "mainnet",
+		Name:     "bsc-mainnet",
 		Usage:    "BSC mainnet",
+		Category: flags.EthCategory,
+	}
+	L2PMainnetFlag = &cli.BoolFlag{
+		Name:     "mainnet",
+		Usage:    "L2P mainnet",
 		Category: flags.EthCategory,
 	}
 	ChapelFlag = &cli.BoolFlag{
@@ -1332,8 +1337,12 @@ var (
 	TestnetFlags = []cli.Flag{
 		ChapelFlag,
 	}
+	MainnetFlags = []cli.Flag{
+		BSCMainnetFlag,
+		L2PMainnetFlag,
+	}
 	// NetworkFlags is the flag group of all built-in supported networks.
-	NetworkFlags = append([]cli.Flag{BSCMainnetFlag}, TestnetFlags...)
+	NetworkFlags = append(MainnetFlags, TestnetFlags...)
 
 	// DatabaseFlags is the flag group of all database flags.
 	DatabaseFlags = []cli.Flag{
@@ -2014,6 +2023,7 @@ func setRequiredBlocks(ctx *cli.Context, cfg *ethconfig.Config) {
 func SetEthConfig(ctx *cli.Context, stack *node.Node, cfg *ethconfig.Config) {
 	// Avoid conflicting network flags, don't allow network id override on preset networks
 	flags.CheckExclusive(ctx, BSCMainnetFlag, DeveloperFlag, NetworkIdFlag)
+	flags.CheckExclusive(ctx, L2PMainnetFlag, DeveloperFlag, NetworkIdFlag)
 	flags.CheckExclusive(ctx, DeveloperFlag, ExternalSignerFlag) // Can't use both ephemeral unlocked and external signer
 
 	// Set configurations from CLI flags
@@ -2250,6 +2260,12 @@ func SetEthConfig(ctx *cli.Context, stack *node.Node, cfg *ethconfig.Config) {
 		}
 		cfg.Genesis = core.DefaultBSCGenesisBlock()
 		SetDNSDiscoveryDefaults(cfg, params.BSCGenesisHash)
+	case ctx.Bool(L2PMainnetFlag.Name):
+		if !ctx.IsSet(NetworkIdFlag.Name) {
+			cfg.NetworkId = 56
+		}
+		cfg.Genesis = core.DefaultL2PGenesisBlock()
+		SetDNSDiscoveryDefaults(cfg, params.L2PGenesisHash)
 	case ctx.Bool(ChapelFlag.Name) || cfg.NetworkId == 97:
 		if !ctx.IsSet(NetworkIdFlag.Name) {
 			cfg.NetworkId = 97
@@ -2766,6 +2782,8 @@ func MakeGenesis(ctx *cli.Context) *core.Genesis {
 	switch {
 	case ctx.Bool(BSCMainnetFlag.Name):
 		genesis = core.DefaultBSCGenesisBlock()
+	case ctx.Bool(L2PMainnetFlag.Name):
+		genesis = core.DefaultL2PGenesisBlock()
 	case ctx.Bool(ChapelFlag.Name):
 		genesis = core.DefaultChapelGenesisBlock()
 	case ctx.Bool(DeveloperFlag.Name):

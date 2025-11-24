@@ -908,6 +908,8 @@ func importHistory(ctx *cli.Context) error {
 	if utils.IsNetworkPreset(ctx) {
 		switch {
 		case ctx.Bool(utils.BSCMainnetFlag.Name):
+			network = "bsc-mainnet"
+		case ctx.Bool(utils.L2PMainnetFlag.Name):
 			network = "mainnet"
 		case ctx.Bool(utils.ChapelFlag.Name):
 			network = "chapel"
