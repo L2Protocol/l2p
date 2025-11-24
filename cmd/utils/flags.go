@@ -2556,7 +2556,7 @@ func parseNodeType() string {
 		version = append(version, git.Date)
 	}
 	arch := []string{runtime.GOOS, runtime.GOARCH}
-	infos := []string{"BSC", strings.Join(version, "-"), strings.Join(arch, "-"), runtime.Version()}
+	infos := []string{"L2P", strings.Join(version, "-"), strings.Join(arch, "-"), runtime.Version()}
 	return strings.Join(infos, "/")
 }
 

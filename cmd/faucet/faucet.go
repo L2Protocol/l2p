@@ -56,7 +56,7 @@ var (
 	genesisFlag       = flag.String("genesis", "", "Genesis json file to seed the chain with")
 	apiPortFlag       = flag.Int("apiport", 8080, "Listener port for the HTTP API connection")
 	wsEndpoint        = flag.String("ws", "http://127.0.0.1:7777/", "Url to ws endpoint")
-	wsEndpointMainnet = flag.String("ws.mainnet", "", "Url to ws endpoint of BSC mainnet")
+	wsEndpointMainnet = flag.String("ws.mainnet", "", "Url to ws endpoint of L2P mainnet")
 
 	netnameFlag = flag.String("faucet.name", "", "Network name to assign to the faucet")
 	payoutFlag  = flag.Int("faucet.amount", 1, "Number of Ethers to pay out per user request")
@@ -212,7 +212,7 @@ type bep2eInfo struct {
 type faucet struct {
 	config        *params.ChainConfig // Chain configurations for signing
 	client        *ethclient.Client   // Client connection to the Ethereum chain
-	clientMainnet *ethclient.Client   // Client connection to BSC mainnet for balance check
+	clientMainnet *ethclient.Client   // Client connection to L2P mainnet for balance check
 	index         []byte              // Index page to serve up on the web
 
 	keystore *keystore.KeyStore // Keystore containing the single signer
@@ -533,10 +533,10 @@ func (f *faucet) apiHandler(w http.ResponseWriter, r *http.Request) {
 			} else {
 				if balanceMainnet.Cmp(minMainnetBalance) < 0 {
 					f.lock.Unlock()
-					log.Warn("insufficient BNB on BSC mainnet", "address", mainnetAddr,
+					log.Warn("insufficient L2P on L2P mainnet", "address", mainnetAddr,
 						"balanceMainnet", balanceMainnet, "minMainnetBalance", minMainnetBalance)
 					// Send an error if failed to meet the minimum balance requirement
-					if err = sendError(wsconn, fmt.Errorf("insufficient BNB on BSC mainnet        (require >=%sBNB)",
+					if err = sendError(wsconn, fmt.Errorf("insufficient L2P on L2P mainnet        (require >=%sBNB)",
 						weiToEtherStringFx(minMainnetBalance, 3))); err != nil {
 						log.Warn("Failed to send mainnet minimum balance error to client", "err", err)
 						return

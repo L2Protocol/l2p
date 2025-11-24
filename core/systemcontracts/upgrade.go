@@ -1085,6 +1085,8 @@ func upgradeBuildInSystemContract(config *params.ChainConfig, blockNumber *big.I
 	/* Add mainnet genesis hash */
 	case params.BSCGenesisHash:
 		network = mainNet
+	case params.L2PGenesisHash:
+		network = mainNet
 	case params.ChapelGenesisHash:
 		network = chapelNet
 	case params.RialtoGenesisHash:
