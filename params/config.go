@@ -374,7 +374,7 @@ var (
 		Parlia: &ParliaConfig{},
 		BlobScheduleConfig: &BlobScheduleConfig{
 			Cancun: DefaultCancunBlobConfig,
-			Prague: DefaultPragueBlobConfigBSC,
+			Prague: DefaultPragueBlobConfigL2P,
 		},
 	}
 
@@ -642,6 +642,7 @@ var (
 	}
 
 	DefaultPragueBlobConfigBSC = DefaultCancunBlobConfig
+	DefaultPragueBlobConfigL2P = DefaultCancunBlobConfig
 )
 
 // NetworkNames are user friendly names to use in the chain spec banner.
