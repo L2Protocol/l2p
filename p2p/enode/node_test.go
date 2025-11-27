@@ -394,10 +394,10 @@ func TestV4NodeIDFromPublicKey(t *testing.T) {
 		url string
 	}{
 		{
-			url: "enode://69a90b35164ef862185d9f4d2c5eff79b92acd1360574c0edf36044055dc766d87285a820233ae5700e11c9ba06ce1cf23c1c68a4556121109776ce2a3990bba@127.0.0.1:30311",
+			url: "enode://69a90b35164ef862185d9f4d2c5eff79b92acd1360574c0edf36044055dc766d87285a820233ae5700e11c9ba06ce1cf23c1c68a4556121109776ce2a3990bba@127.0.0.1:31398",
 		},
 		{
-			url: "enode://df1e8eb59e42cad3c4551b2a53e31a7e55a2fdde1287babd1e94b0836550b489ba16c40932e4dacb16cba346bd442c432265a299c4aca63ee7bb0f832b9f45eb@127.0.0.1:30311",
+			url: "enode://df1e8eb59e42cad3c4551b2a53e31a7e55a2fdde1287babd1e94b0836550b489ba16c40932e4dacb16cba346bd442c432265a299c4aca63ee7bb0f832b9f45eb@127.0.0.1:31398",
 		},
 		{
 			url: "enr:-Je4QEeZoiY8OrUxlckLuU8leuuSfnrveD8PdUnCvHavJJzcGQn7nKikWNV_ZxbRtPt6si-tQNwT_aIYpksq3O2Hzblbg2V0aMfGhPCv0OOAgmlkgnY0gmlwhIe10fKJc2VjcDI1NmsxoQNGM7sxj2Wuen_j9kqzHEmjqSxct1UxxbA9kwl7ha7NRIN0Y3CCdl-DdWRwgnZf",

@@ -24,7 +24,7 @@ func setup(t *testing.T) {
 	currentDirectory := filepath.Dir(filename)
 	configPath = filepath.Join(currentDirectory, "testdata/config.toml")
 	genesisPath = filepath.Join(currentDirectory, "testdata/parlia.json")
-	basePort = 30311
+	basePort = 31398
 }
 
 func TestInitNetworkLocalhost(t *testing.T) {

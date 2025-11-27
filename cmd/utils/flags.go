@@ -1151,7 +1151,7 @@ Please note that --` + MetricsHTTPFlag.Name + ` must be set to start the server.
 	InitNetworkPort = &cli.IntFlag{
 		Name:  "init.p2p-port",
 		Usage: "the p2p port of the nodes in the network",
-		Value: 30311,
+		Value: 31398,
 	}
 	InitSentryNodeSize = &cli.IntFlag{
 		Name:  "init.sentrynode-size",
@@ -1165,7 +1165,7 @@ Please note that --` + MetricsHTTPFlag.Name + ` must be set to start the server.
 	}
 	InitSentryNodePorts = &cli.StringFlag{
 		Name:  "init.sentrynode-ports",
-		Usage: "the ports of each sentry node in the network, example '30311,30312'",
+		Usage: "the ports of each sentry node in the network, example '31398,31399'",
 		Value: "",
 	}
 	InitFullNodeSize = &cli.IntFlag{
@@ -1180,7 +1180,7 @@ Please note that --` + MetricsHTTPFlag.Name + ` must be set to start the server.
 	}
 	InitFullNodePorts = &cli.StringFlag{
 		Name:  "init.fullnode-ports",
-		Usage: "the ports of each full node in the network, example '30311,30312'",
+		Usage: "the ports of each full node in the network, example '31398,31399'",
 		Value: "",
 	}
 	InitEVNSentryWhitelist = &cli.BoolFlag{
