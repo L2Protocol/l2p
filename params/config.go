@@ -344,31 +344,31 @@ var (
 		MuirGlacierBlock:    big.NewInt(0),
 		RamanujanBlock:      big.NewInt(0),
 		NielsBlock:          big.NewInt(0),
-		MirrorSyncBlock:     big.NewInt(5184000),
-		BrunoBlock:          big.NewInt(13082000),
-		EulerBlock:          big.NewInt(18907621),
-		NanoBlock:           big.NewInt(21962149),
-		MoranBlock:          big.NewInt(22107423),
-		GibbsBlock:          big.NewInt(23846001),
-		PlanckBlock:         big.NewInt(27281024),
-		LubanBlock:          big.NewInt(29020050),
-		PlatoBlock:          big.NewInt(30720096),
-		BerlinBlock:         big.NewInt(31302048),
-		LondonBlock:         big.NewInt(31302048),
-		HertzBlock:          big.NewInt(31302048),
-		HertzfixBlock:       big.NewInt(34140700),
-		ShanghaiTime:        newUint64(1705996800), // 2024-01-23 08:00:00 AM UTC
-		KeplerTime:          newUint64(1705996800), // 2024-01-23 08:00:00 AM UTC
-		FeynmanTime:         newUint64(1713419340), // 2024-04-18 05:49:00 AM UTC
-		FeynmanFixTime:      newUint64(1713419340), // 2024-04-18 05:49:00 AM UTC
-		CancunTime:          newUint64(1718863500), // 2024-06-20 06:05:00 AM UTC
-		HaberTime:           newUint64(1718863500), // 2024-06-20 06:05:00 AM UTC
-		HaberFixTime:        newUint64(1727316120), // 2024-09-26 02:02:00 AM UTC
-		BohrTime:            newUint64(1727317200), // 2024-09-26 02:20:00 AM UTC
-		PascalTime:          newUint64(1742436600), // 2025-03-20 02:10:00 AM UTC
-		PragueTime:          newUint64(1742436600), // 2025-03-20 02:10:00 AM UTC
-		LorentzTime:         newUint64(1745903100), // 2025-04-29 05:05:00 AM UTC
-		MaxwellTime:         newUint64(1751250600), // 2025-06-30 02:30:00 AM UTC
+		MirrorSyncBlock:     big.NewInt(1),
+		BrunoBlock:          big.NewInt(1),
+		EulerBlock:          big.NewInt(2),
+		NanoBlock:           big.NewInt(3),
+		MoranBlock:          big.NewInt(3),
+		GibbsBlock:          big.NewInt(4),
+		PlanckBlock:         big.NewInt(5),
+		LubanBlock:          big.NewInt(6),
+		PlatoBlock:          big.NewInt(7),
+		BerlinBlock:         big.NewInt(8),
+		LondonBlock:         big.NewInt(8),
+		HertzBlock:          big.NewInt(8),
+		HertzfixBlock:       big.NewInt(8),
+		ShanghaiTime:        newUint64(1764589200),
+		KeplerTime:          newUint64(1764589210),
+		FeynmanTime:         newUint64(1764589220),
+		FeynmanFixTime:      newUint64(1764589230),
+		CancunTime:          newUint64(1764589240),
+		HaberTime:           newUint64(1764589250),
+		HaberFixTime:        newUint64(1764589260),
+		BohrTime:            newUint64(1764589270),
+		PascalTime:          newUint64(1764589280),
+		PragueTime:          newUint64(1764589290),
+		LorentzTime:         newUint64(1764589300),
+		MaxwellTime:         nil,
 		FermiTime:           nil,
 
 		Parlia: &ParliaConfig{},
