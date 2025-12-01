@@ -49,7 +49,9 @@ type Upgrade struct {
 type upgradeHook func(blockNumber *big.Int, contractAddr common.Address, statedb vm.StateDB) error
 
 const (
-	mainNet    = "Mainnet"
+	mainNet = "Mainnet"
+
+	bscNet     = "BscNet"
 	chapelNet  = "Chapel"
 	rialtoNet  = "Rialto"
 	defaultNet = "Default"
@@ -215,7 +217,7 @@ func init() {
 		},
 	}
 
-	mirrorUpgrade[mainNet] = &Upgrade{
+	mirrorUpgrade[bscNet] = &Upgrade{
 		UpgradeName: "mirror",
 		Configs: []*UpgradeConfig{
 			{
@@ -257,7 +259,7 @@ func init() {
 		},
 	}
 
-	brunoUpgrade[mainNet] = &Upgrade{
+	brunoUpgrade[bscNet] = &Upgrade{
 		UpgradeName: "bruno",
 		Configs: []*UpgradeConfig{
 			{
@@ -279,7 +281,7 @@ func init() {
 		},
 	}
 
-	eulerUpgrade[mainNet] = &Upgrade{
+	eulerUpgrade[bscNet] = &Upgrade{
 		UpgradeName: "euler",
 		Configs: []*UpgradeConfig{
 			{
@@ -311,7 +313,7 @@ func init() {
 		},
 	}
 
-	gibbsUpgrade[mainNet] = &Upgrade{
+	gibbsUpgrade[bscNet] = &Upgrade{
 		UpgradeName: "gibbs",
 		Configs: []*UpgradeConfig{
 			{
@@ -343,7 +345,7 @@ func init() {
 		},
 	}
 
-	moranUpgrade[mainNet] = &Upgrade{
+	moranUpgrade[bscNet] = &Upgrade{
 		UpgradeName: "moran",
 		Configs: []*UpgradeConfig{
 			{
@@ -385,7 +387,7 @@ func init() {
 		},
 	}
 
-	planckUpgrade[mainNet] = &Upgrade{
+	planckUpgrade[bscNet] = &Upgrade{
 		UpgradeName: "planck",
 		Configs: []*UpgradeConfig{
 			{
@@ -432,7 +434,7 @@ func init() {
 		},
 	}
 
-	lubanUpgrade[mainNet] = &Upgrade{
+	lubanUpgrade[bscNet] = &Upgrade{
 		UpgradeName: "luban",
 		Configs: []*UpgradeConfig{
 			{
@@ -494,7 +496,7 @@ func init() {
 		},
 	}
 
-	platoUpgrade[mainNet] = &Upgrade{
+	platoUpgrade[bscNet] = &Upgrade{
 		UpgradeName: "plato",
 		Configs: []*UpgradeConfig{
 			{
@@ -526,7 +528,7 @@ func init() {
 		},
 	}
 
-	keplerUpgrade[mainNet] = &Upgrade{
+	keplerUpgrade[bscNet] = &Upgrade{
 		UpgradeName: "kepler",
 		Configs: []*UpgradeConfig{
 			{
@@ -568,7 +570,7 @@ func init() {
 		},
 	}
 
-	feynmanUpgrade[mainNet] = &Upgrade{
+	feynmanUpgrade[bscNet] = &Upgrade{
 		UpgradeName: "feynman",
 		Configs: []*UpgradeConfig{
 			{
@@ -701,7 +703,7 @@ func init() {
 	}
 
 	// This upgrade is to fix an error on testnet only. So the upgrade config of mainnet is empty.
-	feynmanFixUpgrade[mainNet] = &Upgrade{
+	feynmanFixUpgrade[bscNet] = &Upgrade{
 		UpgradeName: "feynmanFix",
 		Configs:     []*UpgradeConfig{},
 	}
@@ -722,7 +724,7 @@ func init() {
 		},
 	}
 
-	haberFixUpgrade[mainNet] = &Upgrade{
+	haberFixUpgrade[bscNet] = &Upgrade{
 		UpgradeName: "haberFix",
 		Configs: []*UpgradeConfig{
 			{
@@ -754,7 +756,7 @@ func init() {
 		},
 	}
 
-	bohrUpgrade[mainNet] = &Upgrade{
+	bohrUpgrade[bscNet] = &Upgrade{
 		UpgradeName: "bohr",
 		Configs: []*UpgradeConfig{
 			{
@@ -786,7 +788,7 @@ func init() {
 		},
 	}
 
-	pascalUpgrade[mainNet] = &Upgrade{
+	pascalUpgrade[bscNet] = &Upgrade{
 		UpgradeName: "pascal",
 		Configs: []*UpgradeConfig{
 			{
@@ -968,7 +970,7 @@ func init() {
 		},
 	}
 
-	lorentzUpgrade[mainNet] = &Upgrade{
+	lorentzUpgrade[bscNet] = &Upgrade{
 		UpgradeName: "lorentz",
 		Configs: []*UpgradeConfig{
 			{
@@ -990,7 +992,7 @@ func init() {
 		},
 	}
 
-	maxwellUpgrade[mainNet] = &Upgrade{
+	maxwellUpgrade[bscNet] = &Upgrade{
 		UpgradeName: "maxwell",
 		Configs: []*UpgradeConfig{
 			{
@@ -1023,7 +1025,7 @@ func init() {
 		},
 	}
 
-	fermiUpgrade[mainNet] = &Upgrade{
+	fermiUpgrade[bscNet] = &Upgrade{
 		UpgradeName: "fermi",
 		Configs: []*UpgradeConfig{
 			{
@@ -1084,7 +1086,7 @@ func upgradeBuildInSystemContract(config *params.ChainConfig, blockNumber *big.I
 	switch GenesisHash {
 	/* Add mainnet genesis hash */
 	case params.BSCGenesisHash:
-		network = mainNet
+		network = bscNet
 	case params.L2PGenesisHash:
 		network = mainNet
 	case params.ChapelGenesisHash:
