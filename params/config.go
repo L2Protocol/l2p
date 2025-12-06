@@ -30,10 +30,10 @@ import (
 var (
 	MainnetGenesisHash = common.HexToHash("0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3")
 
-	BSCGenesisHash    = common.HexToHash("0x133cc08cc305dae64101c8ac50e5a61c4a7c65a8ad6a3799d1bac27fcffa4a16")
+	BSCGenesisHash    = common.HexToHash("0x0d21840abff46b96c84b2ac9e10e4f5cdaeb5693cb665db62a2f3b02d2d57b5b")
 	ChapelGenesisHash = common.HexToHash("0x6d3c66c5357ec91d5c43af47e234a939b22557cbb552dc45bebbceeed90fbe34")
 	RialtoGenesisHash = common.HexToHash("0xee835a629f9cf5510b48b6ba41d69e0ff7d6ef10f977166ef939db41f59f5501")
-	L2PGenesisHash    = common.HexToHash("0xc7f533553e8ec370a644852ca81394d0f3766b4eef2e90d9348f10828357bb47")
+	L2PGenesisHash    = common.HexToHash("0x133cc08cc305dae64101c8ac50e5a61c4a7c65a8ad6a3799d1bac27fcffa4a16")
 )
 
 func newUint64(val uint64) *uint64 { return &val }
@@ -357,17 +357,17 @@ var (
 		LondonBlock:         big.NewInt(8),
 		HertzBlock:          big.NewInt(8),
 		HertzfixBlock:       big.NewInt(8),
-		ShanghaiTime:        newUint64(1764950400),
-		KeplerTime:          newUint64(1764950410),
-		FeynmanTime:         newUint64(1764950420),
-		FeynmanFixTime:      newUint64(1764950430),
-		CancunTime:          newUint64(1764950440),
-		HaberTime:           newUint64(1764950450),
-		HaberFixTime:        newUint64(1764950460),
-		BohrTime:            newUint64(1764950470),
-		PascalTime:          newUint64(1764950480),
-		PragueTime:          newUint64(1764950490),
-		LorentzTime:         newUint64(1764950500),
+		ShanghaiTime:        newUint64(1764968400),
+		KeplerTime:          newUint64(1764968400),
+		FeynmanTime:         newUint64(1764968500),
+		FeynmanFixTime:      newUint64(1764968500),
+		CancunTime:          newUint64(1764968600),
+		HaberTime:           newUint64(1764968600),
+		HaberFixTime:        newUint64(1764968610),
+		BohrTime:            newUint64(1764968620),
+		PascalTime:          newUint64(1764968630),
+		PragueTime:          newUint64(1764968630),
+		LorentzTime:         newUint64(1764968640),
 		MaxwellTime:         nil,
 		FermiTime:           nil,
 
