@@ -145,6 +145,8 @@ func main() {
 		if _, err := discover.ListenV5(conn, ln, cfg); err != nil {
 			utils.Fatalf("%v", err)
 		}
+		log.Info("Started Discv5 listener", "self", ln.Node().URLv4())
+		fmt.Println("ENR:", ln.Node().String())
 	} else {
 		if _, err := discover.ListenUDP(conn, ln, cfg); err != nil {
 			utils.Fatalf("%v", err)
