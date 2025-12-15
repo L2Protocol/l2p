@@ -7,7 +7,6 @@ on:
       - v*
 env:
   REGISTRY: ghcr.io
-  REGISTRY_IMAGE: ${{ github.repository }}
 
 jobs:
   build:
