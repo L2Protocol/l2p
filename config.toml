@@ -23,22 +23,9 @@ Blocks = 20
 Percentile = 60
 OracleThreshold = 1000
 
-[Node]
-IPCPath = "geth.ipc"
-HTTPHost = "localhost"
-InsecureUnlockAllowed = false
-HTTPPort = 8545
-HTTPVirtualHosts = ["localhost"]
-HTTPModules = ["eth", "net", "web3", "txpool", "parlia"]
-WSPort = 8546
-WSModules = ["net", "web3", "eth"]
-
 [Node.P2P]
 MaxPeers = 200
-NoDiscovery = false
-StaticNodes = []
 ListenAddr = ":31398"
-EnableMsgEvents = false
 
 [Node.LogConfig]
 FilePath = "l2p.log"
