@@ -45,7 +45,7 @@ jobs:
           context: .
           platforms: ${{ matrix.platform }}
           labels: ${{ steps.meta.outputs.labels }}
-          outputs: type=image,name=${{ fromJSON(steps.meta.outputs.json).tags[0] }},push-by-digest=true,name-canonical=true,push=true
+          outputs: type=image,name=ghcr.io/${{ github.repository_owner }}/l2p,push-by-digest=true,name-canonical=true,push=true
 
       - name: Export digest
         run: |
@@ -103,8 +103,8 @@ jobs:
         working-directory: /tmp/digests
         run: |
           docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
-            $(printf '${{ fromJSON(steps.meta.outputs.json).tags[0] }}@sha256:%s ' *)
+            $(printf 'ghcr.io/${{ github.repository_owner }}/l2p@sha256:%s ' *)
 
       - name: Inspect image
         run: |
-          docker buildx imagetools inspect ${{ fromJSON(steps.meta.outputs.json).tags[0] }}
+          docker buildx imagetools inspect ghcr.io/${{ github.repository_owner }}/l2p:${{ steps.meta.outputs.version }}
