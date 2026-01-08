@@ -678,7 +678,7 @@ func DefaultL2PGenesisBlock() *Genesis {
 		Difficulty: big.NewInt(1),
 		Mixhash:    common.Hash(hexutil.MustDecode("0x0000000000000000000000000000000000000000000000000000000000000000")),
 		Coinbase:   common.HexToAddress("0xffffFFFfFFffffffffffffffFfFFFfffFFFfFFfE"),
-		Timestamp:  0x692097e2,
+		Timestamp:  0x695faa50,
 		Alloc:      alloc,
 	}
 }

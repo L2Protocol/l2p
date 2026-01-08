@@ -33,7 +33,7 @@ var (
 	BSCGenesisHash    = common.HexToHash("0x0d21840abff46b96c84b2ac9e10e4f5cdaeb5693cb665db62a2f3b02d2d57b5b")
 	ChapelGenesisHash = common.HexToHash("0x6d3c66c5357ec91d5c43af47e234a939b22557cbb552dc45bebbceeed90fbe34")
 	RialtoGenesisHash = common.HexToHash("0xee835a629f9cf5510b48b6ba41d69e0ff7d6ef10f977166ef939db41f59f5501")
-	L2PGenesisHash    = common.HexToHash("0x133cc08cc305dae64101c8ac50e5a61c4a7c65a8ad6a3799d1bac27fcffa4a16")
+	L2PGenesisHash    = common.HexToHash("0xcd210a5a8a8af1c3c6fde20e41cc5c4199f727dcbd21a95ae470d048fa59ff17")
 )
 
 func newUint64(val uint64) *uint64 { return &val }
@@ -357,17 +357,17 @@ var (
 		LondonBlock:         big.NewInt(8),
 		HertzBlock:          big.NewInt(8),
 		HertzfixBlock:       big.NewInt(8),
-		ShanghaiTime:        newUint64(1764968400),
-		KeplerTime:          newUint64(1764968400),
-		FeynmanTime:         newUint64(1764968500),
-		FeynmanFixTime:      newUint64(1764968500),
-		CancunTime:          newUint64(1764968600),
-		HaberTime:           newUint64(1764968600),
-		HaberFixTime:        newUint64(1764968610),
-		BohrTime:            newUint64(1764968620),
-		PascalTime:          newUint64(1764968630),
-		PragueTime:          newUint64(1764968630),
-		LorentzTime:         newUint64(1764968640),
+		ShanghaiTime:        newUint64(1767884400),
+		KeplerTime:          newUint64(1767884400),
+		FeynmanTime:         newUint64(1767884500),
+		FeynmanFixTime:      newUint64(1767884500),
+		CancunTime:          newUint64(1767884600),
+		HaberTime:           newUint64(1767884600),
+		HaberFixTime:        newUint64(1767884610),
+		BohrTime:            newUint64(1767884620),
+		PascalTime:          newUint64(1767884630),
+		PragueTime:          newUint64(1767884630),
+		LorentzTime:         newUint64(1767884640),
 		MaxwellTime:         nil,
 		FermiTime:           nil,
 
