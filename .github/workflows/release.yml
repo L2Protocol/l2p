@@ -151,9 +151,8 @@ jobs:
         run: |
           . ./.github/release.env
           echo "mainnet.zip url: $MAINNET_FILE_URL"
-          echo "testnet.zip url: $TESTNET_FILE_URL"
           curl -L $MAINNET_FILE_URL -o ./mainnet.zip
-          curl -L $TESTNET_FILE_URL -o ./testnet.zip
+          
       # ==============================
       #       Create release
       # ==============================
@@ -175,7 +174,7 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ env.RELEASE_VERSION}}
           release_name: ${{ env.RELEASE_VERSION}}
@@ -185,7 +184,6 @@ jobs:
           prerelease: false
           files: |
             ./mainnet.zip
-            ./testnet.zip
             ./linux/geth_linux
             ./macos/geth_macos
             ./windows/geth_windows.exe
