@@ -127,6 +127,11 @@ type EVM struct {
 	// jumpDests is the aggregated result of JUMPDEST analysis made through
 	jumpDests map[common.Hash]bitvec
 
+	// readOnly is a call-stack property set by STATICCALL and inherited by all
+	// descendants. It must live on EVM (not interpreter) since the EVM may swap
+	// interpreter implementations during execution.
+	readOnly bool
+
 	// the life cycle of EVM.
 	optInterpreter  *EVMInterpreter
 	baseInterpreter *EVMInterpreter
