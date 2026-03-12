@@ -1413,7 +1413,7 @@ func (p *Parlia) Finalize(chain consensus.ChainHeaderReader, header *types.Heade
 	if p.chainConfig.IsOnFeynman(header.Number, parent.Time, header.Time) {
 		err := p.initializeFeynmanContract(state, header, cx, txs, receipts, systemTxs, usedGas, false, tracer)
 		if err != nil {
-			log.Error("init feynman contract failed", "error", err)
+			return fmt.Errorf("init feynman contract failed: %v", err)
 		}
 	}
 
@@ -1421,7 +1421,7 @@ func (p *Parlia) Finalize(chain consensus.ChainHeaderReader, header *types.Heade
 	if header.Number.Cmp(common.Big1) == 0 {
 		err := p.initContract(state, header, cx, txs, receipts, systemTxs, usedGas, false, tracer)
 		if err != nil {
-			log.Error("init contract failed")
+			return errors.New("init contract failed")
 		}
 	}
 	if header.Difficulty.Cmp(diffInTurn) != 0 {
@@ -1446,7 +1446,6 @@ func (p *Parlia) Finalize(chain consensus.ChainHeaderReader, header *types.Heade
 			log.Trace("slash validator", "block hash", header.Hash(), "address", spoiledVal)
 			err = p.slash(spoiledVal, state, header, cx, txs, receipts, systemTxs, usedGas, false, tracer)
 			if err != nil {
-				// it is possible that slash validator failed because of the slash channel is disabled.
 				log.Error("slash validator failed", "block hash", header.Hash(), "address", spoiledVal, "err", err)
 			}
 		}
@@ -1512,14 +1511,14 @@ func (p *Parlia) FinalizeAndAssemble(chain consensus.ChainHeaderReader, header *
 	if p.chainConfig.IsOnFeynman(header.Number, parent.Time, header.Time) {
 		err := p.initializeFeynmanContract(state, header, cx, &body.Transactions, &receipts, nil, &header.GasUsed, true, tracer)
 		if err != nil {
-			log.Error("init feynman contract failed", "error", err)
+			return nil, nil, fmt.Errorf("init feynman contract failed: %v", err)
 		}
 	}
 
 	if header.Number.Cmp(common.Big1) == 0 {
 		err := p.initContract(state, header, cx, &body.Transactions, &receipts, nil, &header.GasUsed, true, tracer)
 		if err != nil {
-			log.Error("init contract failed")
+			return nil, nil, errors.New("init contract failed")
 		}
 	}
 	if header.Difficulty.Cmp(diffInTurn) != 0 {
@@ -1543,7 +1542,6 @@ func (p *Parlia) FinalizeAndAssemble(chain consensus.ChainHeaderReader, header *
 		if !signedRecently {
 			err = p.slash(spoiledVal, state, header, cx, &body.Transactions, &receipts, nil, &header.GasUsed, true, tracer)
 			if err != nil {
-				// it is possible that slash validator failed because of the slash channel is disabled.
 				log.Error("slash validator failed", "block hash", header.Hash(), "address", spoiledVal)
 			}
 		}
@@ -2218,6 +2216,8 @@ func (p *Parlia) applyTransaction(
 		return err
 	}
 	*txs = append(*txs, expectedTx)
+	// increment nonce only when tx is included
+	state.SetNonce(msg.From, nonce+1, tracing.NonceChangeEoACall)
 	var root []byte
 	if p.chainConfig.IsByzantium(header.Number) {
 		state.Finalise(true)
@@ -2484,8 +2484,6 @@ func applyMessage(
 	} else {
 		state.ClearAccessList()
 	}
-	// Increment the nonce for the next transaction
-	state.SetNonce(msg.From, state.GetNonce(msg.From)+1, tracing.NonceChangeEoACall)
 
 	ret, returnGas, err := evm.Call(
 		msg.From,
