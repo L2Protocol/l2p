@@ -1535,7 +1535,7 @@ func (s *StateDB) commitAndFlush(block uint64, deleteEmptyObjects bool, noStorag
 			}
 		}
 	}
-	s.reader, _ = s.db.Reader(s.originalRoot)
+	s.reader, err = s.db.Reader(s.originalRoot)
 	return ret, err
 }
 
