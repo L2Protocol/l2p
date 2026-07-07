@@ -806,6 +806,14 @@ func (c *ChainConfig) IsOnPrague(currentBlockNumber *big.Int, lastBlockTime uint
 	return !c.IsPrague(lastBlockNumber, lastBlockTime) && c.IsPrague(currentBlockNumber, currentBlockTime)
 }
 
+func (c *ChainConfig) IsInBSC() bool {
+	return c.Parlia != nil
+}
+
+func (c *ChainConfig) IsNotInBSC() bool {
+	return c.Parlia == nil
+}
+
 // IsLorentz returns whether time is either equal to the Lorentz fork time or greater.
 func (c *ChainConfig) IsLorentz(num *big.Int, time uint64) bool {
 	return c.IsLondon(num) && isTimestampForked(c.LorentzTime, time)
