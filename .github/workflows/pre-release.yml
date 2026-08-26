@@ -20,14 +20,14 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v5
 
       - name: Install Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v6
         with:
           go-version: ${{ matrix.go-version }}
 
-      - uses: actions/cache@v3
+      - uses: actions/cache@v5
         with:
           # In order:
           # * Module download cache
@@ -82,28 +82,28 @@ jobs:
       # ==============================
 
       - name: Upload Linux Build
-        uses: actions/upload-artifact@v4.3.3
+        uses: actions/upload-artifact@v6
         if: matrix.os == 'ubuntu-latest'
         with:
           name: linux
           path: ./build/bin/geth
 
       - name: Upload MacOS Build
-        uses: actions/upload-artifact@v4.3.3
+        uses: actions/upload-artifact@v6
         if: matrix.os == 'macos-latest'
         with:
           name: macos
           path: ./build/bin/geth
       
       - name: Upload Windows Build
-        uses: actions/upload-artifact@v4.3.3
+        uses: actions/upload-artifact@v6
         if: matrix.os == 'windows-latest'
         with:
           name: windows
           path: ./build/bin/geth.exe
 
       - name: Upload ARM-64 Build
-        uses: actions/upload-artifact@v4.3.3
+        uses: actions/upload-artifact@v6
         if: matrix.os == 'ubuntu-latest'
         with:
           name: arm64
@@ -118,32 +118,32 @@ jobs:
         run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
 
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v5
 
       # ==============================
       #       Download artifacts
       # ==============================
 
       - name: Download Artifacts
-        uses: actions/download-artifact@v4.1.7
+        uses: actions/download-artifact@v7
         with:
           name: linux
           path: ./linux
       
       - name: Download Artifacts
-        uses: actions/download-artifact@v4.1.7
+        uses: actions/download-artifact@v7
         with:
           name: macos
           path: ./macos
       
       - name: Download Artifacts
-        uses: actions/download-artifact@v4.1.7
+        uses: actions/download-artifact@v7
         with:
           name: windows
           path: ./windows
       
       - name: Download Artifacts
-        uses: actions/download-artifact@v4.1.7
+        uses: actions/download-artifact@v7
         with:
           name: arm64
           path: ./arm64
@@ -166,7 +166,7 @@ jobs:
           mv ./windows/geth.exe ./windows/geth_windows.exe
 
       - name: Create Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v3
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
         with:
