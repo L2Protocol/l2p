@@ -78,29 +78,20 @@ func testSetupGenesis(t *testing.T, scheme string) {
 		{
 			name: "mainnet block in DB, genesis == nil",
 			fn: func(db ethdb.Database) (*params.ChainConfig, common.Hash, *params.ConfigCompatError, error) {
-				DefaultBSCGenesisBlock().MustCommit(db, triedb.NewDatabase(db, newDbConfig(scheme)))
+				DefaultL2PGenesisBlock().MustCommit(db, triedb.NewDatabase(db, newDbConfig(scheme)))
 				return SetupGenesisBlock(db, triedb.NewDatabase(db, newDbConfig(scheme)), nil)
 			},
-			wantHash:   params.BSCGenesisHash,
-			wantConfig: params.BSCChainConfig,
+			wantHash:   params.L2PGenesisHash,
+			wantConfig: params.L2PChainConfig,
 		},
 		{
-			name: "chapel block in DB, genesis == nil",
+			name: "mainnet block in DB, genesis == mainnet",
 			fn: func(db ethdb.Database) (*params.ChainConfig, common.Hash, *params.ConfigCompatError, error) {
-				DefaultChapelGenesisBlock().MustCommit(db, triedb.NewDatabase(db, newDbConfig(scheme)))
-				return SetupGenesisBlock(db, triedb.NewDatabase(db, newDbConfig(scheme)), nil)
+				DefaultL2PGenesisBlock().MustCommit(db, triedb.NewDatabase(db, newDbConfig(scheme)))
+				return SetupGenesisBlock(db, triedb.NewDatabase(db, newDbConfig(scheme)), DefaultL2PGenesisBlock())
 			},
-			wantHash:   params.ChapelGenesisHash,
-			wantConfig: params.ChapelChainConfig,
-		},
-		{
-			name: "chapel block in DB, genesis == chapel",
-			fn: func(db ethdb.Database) (*params.ChainConfig, common.Hash, *params.ConfigCompatError, error) {
-				DefaultChapelGenesisBlock().MustCommit(db, triedb.NewDatabase(db, newDbConfig(scheme)))
-				return SetupGenesisBlock(db, triedb.NewDatabase(db, newDbConfig(scheme)), DefaultChapelGenesisBlock())
-			},
-			wantHash:   params.ChapelGenesisHash,
-			wantConfig: params.ChapelChainConfig,
+			wantHash:   params.L2PGenesisHash,
+			wantConfig: params.L2PChainConfig,
 		},
 		{
 			name: "custom block in DB, genesis == nil",
@@ -113,13 +104,13 @@ func testSetupGenesis(t *testing.T, scheme string) {
 			wantConfig: customg.Config,
 		},
 		{
-			name: "custom block in DB, genesis == chapel",
+			name: "custom block in DB, genesis == mainnet",
 			fn: func(db ethdb.Database) (*params.ChainConfig, common.Hash, *params.ConfigCompatError, error) {
 				tdb := triedb.NewDatabase(db, newDbConfig(scheme))
 				customg.Commit(db, tdb)
-				return SetupGenesisBlock(db, tdb, DefaultChapelGenesisBlock())
+				return SetupGenesisBlock(db, tdb, DefaultL2PGenesisBlock())
 			},
-			wantErr: &GenesisMismatchError{Stored: customghash, New: params.ChapelGenesisHash},
+			wantErr: &GenesisMismatchError{Stored: customghash, New: params.L2PGenesisHash},
 		},
 		{
 			name: "compatible config in DB",
@@ -193,7 +184,7 @@ func TestGenesisHashes(t *testing.T) {
 		genesis *Genesis
 		want    common.Hash
 	}{
-		{DefaultGenesisBlock(), params.MainnetGenesisHash},
+		{DefaultL2PGenesisBlock(), params.L2PGenesisHash},
 	} {
 		// Test via MustCommit
 		db := rawdb.NewMemoryDatabase()
@@ -266,27 +257,27 @@ func TestReadWriteGenesisAlloc(t *testing.T) {
 }
 
 func TestConfigOrDefault(t *testing.T) {
-	defaultGenesis := DefaultGenesisBlock()
+	defaultGenesis := &Genesis{Config: params.TestChainConfig}
 	if defaultGenesis.Config.PlanckBlock != nil {
 		t.Errorf("initial config should have PlanckBlock = nil, but instead PlanckBlock = %v", defaultGenesis.Config.PlanckBlock)
 	}
-	gHash := params.BSCGenesisHash
+	gHash := params.L2PGenesisHash
 	config := defaultGenesis.chainConfigOrDefault(gHash, nil)
 
-	if config.ChainID.Cmp(params.BSCChainConfig.ChainID) != 0 {
-		t.Errorf("ChainID of resulting config should be %v, but is %v instead", params.BSCChainConfig.ChainID, config.ChainID)
+	if config.ChainID.Cmp(params.L2PChainConfig.ChainID) != 0 {
+		t.Errorf("ChainID of resulting config should be %v, but is %v instead", params.L2PChainConfig.ChainID, config.ChainID)
 	}
 
-	if config.HomesteadBlock.Cmp(params.BSCChainConfig.HomesteadBlock) != 0 {
-		t.Errorf("resulting config should have HomesteadBlock = %v, but instead is %v", params.BSCChainConfig, config.HomesteadBlock)
+	if config.HomesteadBlock.Cmp(params.L2PChainConfig.HomesteadBlock) != 0 {
+		t.Errorf("resulting config should have HomesteadBlock = %v, but instead is %v", params.L2PChainConfig, config.HomesteadBlock)
 	}
 
 	if config.PlanckBlock == nil {
-		t.Errorf("resulting config should have PlanckBlock = %v , but instead is nil", params.BSCChainConfig.PlanckBlock)
+		t.Errorf("resulting config should have PlanckBlock = %v , but instead is nil", params.L2PChainConfig.PlanckBlock)
 	}
 
-	if config.PlanckBlock.Cmp(params.BSCChainConfig.PlanckBlock) != 0 {
-		t.Errorf("resulting config should have PlanckBlock = %v , but instead is %v", params.BSCChainConfig.PlanckBlock, config.PlanckBlock)
+	if config.PlanckBlock.Cmp(params.L2PChainConfig.PlanckBlock) != 0 {
+		t.Errorf("resulting config should have PlanckBlock = %v , but instead is %v", params.L2PChainConfig.PlanckBlock, config.PlanckBlock)
 	}
 }
 

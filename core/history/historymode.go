@@ -20,7 +20,6 @@ import (
 	"fmt"
 
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/params"
 )
 
 // HistoryMode configures history pruning.
@@ -78,13 +77,7 @@ type PrunePoint struct {
 // PrunePoints the pre-defined history pruning cutoff blocks for known networks.
 // They point to the first post-merge block. Any pruning should truncate *up to* but excluding
 // given block.
-var PrunePoints = map[common.Hash]*PrunePoint{
-	// mainnet
-	params.MainnetGenesisHash: {
-		BlockNumber: 15537393,
-		BlockHash:   common.HexToHash("0x55b11b918355b1ef9c5db810302ebad0bf2544255b530cdce90674d5887bb286"),
-	},
-}
+var PrunePoints = map[common.Hash]*PrunePoint{}
 
 // PrunedHistoryError is returned by APIs when the requested history is pruned.
 type PrunedHistoryError struct{}

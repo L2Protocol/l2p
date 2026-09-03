@@ -225,14 +225,8 @@ func getGenesisState(db ethdb.Database, blockhash common.Hash) (alloc types.Gene
 	// - private network, can't recover
 	var genesis *Genesis
 	switch blockhash {
-	case params.MainnetGenesisHash:
-		genesis = DefaultGenesisBlock()
-	case params.BSCGenesisHash:
-		genesis = DefaultBSCGenesisBlock()
 	case params.L2PGenesisHash:
 		genesis = DefaultL2PGenesisBlock()
-	case params.ChapelGenesisHash:
-		genesis = DefaultChapelGenesisBlock()
 	}
 	if genesis != nil {
 		return genesis.Alloc, nil
@@ -361,8 +355,8 @@ func SetupGenesisBlockWithOverride(db ethdb.Database, triedb *triedb.Database, g
 		// networks must explicitly specify the genesis in the config file, mainnet
 		// genesis will be used as default and the initialization will always fail.
 		if genesis == nil {
-			log.Info("Writing default main-net genesis block")
-			genesis = DefaultGenesisBlock()
+			log.Info("Writing default L2P mainnet genesis block")
+			genesis = DefaultL2PGenesisBlock()
 		} else {
 			log.Info("Writing custom genesis block")
 		}
@@ -639,34 +633,6 @@ func EnableVerkleAtGenesis(db ethdb.Database, genesis *Genesis) (bool, error) {
 	return false, nil
 }
 
-// DefaultGenesisBlock returns the Ethereum main net genesis block.
-func DefaultGenesisBlock() *Genesis {
-	return &Genesis{
-		Config:     params.MainnetChainConfig,
-		Nonce:      66,
-		ExtraData:  hexutil.MustDecode("0x11bbe8db4e347b4e8c937c1c8370e4b5ed33adb3db69cbdb7a38e1e50b1b82fa"),
-		GasLimit:   5000,
-		Difficulty: big.NewInt(17179869184),
-		Alloc:      decodePrealloc(mainnetAllocData),
-	}
-}
-
-// DefaultBSCGenesisBlock returns the BSC mainnet genesis block.
-func DefaultBSCGenesisBlock() *Genesis {
-	alloc := decodePrealloc(bscMainnetAllocData)
-	return &Genesis{
-		Config:     params.BSCChainConfig,
-		Nonce:      0,
-		ExtraData:  hexutil.MustDecode("0x00000000000000000000000000000000000000000000000000000000000000002a7cdd959bfe8d9487b2a43b33565295a698f7e26488aa4d1955ee33403f8ccb1d4de5fb97c7ade29ef9f4360c606c7ab4db26b016007d3ad0ab86a0ee01c3b1283aa067c58eab4709f85e99d46de5fe685b1ded8013785d6623cc18d214320b6bb6475978f3adfc719c99674c072166708589033e2d9afec2be4ec20253b8642161bc3f444f53679c1f3d472f7be8361c80a4c1e7e9aaf001d0877f1cfde218ce2fd7544e0b2cc94692d4a704debef7bcb61328b8f7166496996a7da21cf1f1b04d9b3e26a3d0772d4c407bbe49438ed859fe965b140dcf1aab71a96bbad7cf34b5fa511d8e963dbba288b1960e75d64430b3230294d12c6ab2aac5c2cd68e80b16b581ea0a6e3c511bbd10f4519ece37dc24887e11b55d7ae2f5b9e386cd1b50a4550696d957cb4900f03a82012708dafc9e1b880fd083b32182b869be8e0922b81f8e175ffde54d797fe11eb03f9e3bf75f1d68bf0b8b6fb4e317a0f9d6f03eaf8ce6675bc60d8c4d90829ce8f72d0163c1d5cf348a862d55063035e7a025f4da968de7e4d7e4004197917f4070f1d6caa02bbebaebb5d7e581e4b66559e635f805ff0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"),
-		GasLimit:   40000000,
-		Difficulty: big.NewInt(1),
-		Mixhash:    common.Hash(hexutil.MustDecode("0x0000000000000000000000000000000000000000000000000000000000000000")),
-		Coinbase:   common.HexToAddress("0xffffFFFfFFffffffffffffffFfFFFfffFFFfFFfE"),
-		Timestamp:  0x5e9da7ce,
-		Alloc:      alloc,
-	}
-}
-
 // DefaultL2PGenesisBlock returns the L2P mainnet genesis block.
 func DefaultL2PGenesisBlock() *Genesis {
 	alloc := decodePrealloc(l2pMainnetAllocData)
@@ -679,22 +645,6 @@ func DefaultL2PGenesisBlock() *Genesis {
 		Mixhash:    common.Hash(hexutil.MustDecode("0x0000000000000000000000000000000000000000000000000000000000000000")),
 		Coinbase:   common.HexToAddress("0xffffFFFfFFffffffffffffffFfFFFfffFFFfFFfE"),
 		Timestamp:  0x695faa50,
-		Alloc:      alloc,
-	}
-}
-
-// DefaultChapelGenesisBlock returns the BSC mainnet genesis block.
-func DefaultChapelGenesisBlock() *Genesis {
-	alloc := decodePrealloc(bscChapelAllocData)
-	return &Genesis{
-		Config:     params.ChapelChainConfig,
-		Nonce:      0,
-		ExtraData:  hexutil.MustDecode("0x00000000000000000000000000000000000000000000000000000000000000001284214b9b9c85549ab3d2b972df0deef66ac2c9b71b214cb885500844365e95cd9942c7276e7fd8a2959d3f95eae5dc7d70144ce1b73b403b7eb6e0980a75ecd1309ea12fa2ed87a8744fbfc9b863d535552c16704d214347f29fa77f77da6d75d7c752f474cf03cceff28abc65c9cbae594f725c80e12d0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"),
-		GasLimit:   40000000,
-		Difficulty: big.NewInt(1),
-		Mixhash:    common.Hash(hexutil.MustDecode("0x0000000000000000000000000000000000000000000000000000000000000000")),
-		Coinbase:   common.HexToAddress("0xffffFFFfFFffffffffffffffFfFFFfffFFFfFFfE"),
-		Timestamp:  0x5e9da7ce,
 		Alloc:      alloc,
 	}
 }

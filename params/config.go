@@ -28,307 +28,18 @@ import (
 
 // Genesis hashes to enforce below configs on.
 var (
-	MainnetGenesisHash = common.HexToHash("0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3")
-
-	BSCGenesisHash    = common.HexToHash("0x0d21840abff46b96c84b2ac9e10e4f5cdaeb5693cb665db62a2f3b02d2d57b5b")
-	ChapelGenesisHash = common.HexToHash("0x6d3c66c5357ec91d5c43af47e234a939b22557cbb552dc45bebbceeed90fbe34")
-	RialtoGenesisHash = common.HexToHash("0xee835a629f9cf5510b48b6ba41d69e0ff7d6ef10f977166ef939db41f59f5501")
-	L2PGenesisHash    = common.HexToHash("0xcd210a5a8a8af1c3c6fde20e41cc5c4199f727dcbd21a95ae470d048fa59ff17")
+	L2PGenesisHash = common.HexToHash("0xcd210a5a8a8af1c3c6fde20e41cc5c4199f727dcbd21a95ae470d048fa59ff17")
 )
 
 func newUint64(val uint64) *uint64 { return &val }
 
 var (
-	MainnetTerminalTotalDifficulty, _ = new(big.Int).SetString("58_750_000_000_000_000_000_000", 0)
-
-	// MainnetChainConfig is the chain parameters to run a node on the main network.
-	MainnetChainConfig = &ChainConfig{
-		ChainID:                 big.NewInt(1),
-		HomesteadBlock:          big.NewInt(1_150_000),
-		DAOForkBlock:            big.NewInt(1_920_000),
-		DAOForkSupport:          true,
-		EIP150Block:             big.NewInt(2_463_000),
-		EIP155Block:             big.NewInt(2_675_000),
-		EIP158Block:             big.NewInt(2_675_000),
-		ByzantiumBlock:          big.NewInt(4_370_000),
-		ConstantinopleBlock:     big.NewInt(7_280_000),
-		PetersburgBlock:         big.NewInt(7_280_000),
-		IstanbulBlock:           big.NewInt(9_069_000),
-		MuirGlacierBlock:        big.NewInt(9_200_000),
-		BerlinBlock:             big.NewInt(12_244_000),
-		LondonBlock:             big.NewInt(12_965_000),
-		ArrowGlacierBlock:       big.NewInt(13_773_000),
-		GrayGlacierBlock:        big.NewInt(15_050_000),
-		TerminalTotalDifficulty: MainnetTerminalTotalDifficulty, // 58_750_000_000_000_000_000_000
-		ShanghaiTime:            newUint64(1681338455),
-		CancunTime:              newUint64(1710338135),
-		PragueTime:              newUint64(1746612311),
-		DepositContractAddress:  common.HexToAddress("0x00000000219ab540356cbb839cbe05303d7705fa"),
-		Ethash:                  new(EthashConfig),
-		BlobScheduleConfig: &BlobScheduleConfig{
-			Cancun: DefaultCancunBlobConfig,
-			Prague: DefaultPragueBlobConfig,
-		},
-	}
-	// HoleskyChainConfig contains the chain parameters to run a node on the Holesky test network.
-	HoleskyChainConfig = &ChainConfig{
-		ChainID:                 big.NewInt(17000),
-		HomesteadBlock:          big.NewInt(0),
-		DAOForkBlock:            nil,
-		DAOForkSupport:          true,
-		EIP150Block:             big.NewInt(0),
-		EIP155Block:             big.NewInt(0),
-		EIP158Block:             big.NewInt(0),
-		ByzantiumBlock:          big.NewInt(0),
-		ConstantinopleBlock:     big.NewInt(0),
-		PetersburgBlock:         big.NewInt(0),
-		IstanbulBlock:           big.NewInt(0),
-		MuirGlacierBlock:        nil,
-		BerlinBlock:             big.NewInt(0),
-		LondonBlock:             big.NewInt(0),
-		ArrowGlacierBlock:       nil,
-		GrayGlacierBlock:        nil,
-		TerminalTotalDifficulty: big.NewInt(0),
-		MergeNetsplitBlock:      nil,
-		ShanghaiTime:            newUint64(1696000704),
-		CancunTime:              newUint64(1707305664),
-		PragueTime:              newUint64(1740434112),
-		DepositContractAddress:  common.HexToAddress("0x4242424242424242424242424242424242424242"),
-		Ethash:                  new(EthashConfig),
-		BlobScheduleConfig: &BlobScheduleConfig{
-			Cancun: DefaultCancunBlobConfig,
-			Prague: DefaultPragueBlobConfig,
-		},
-	}
-	// SepoliaChainConfig contains the chain parameters to run a node on the Sepolia test network.
+	// SepoliaChainConfig is not a network this client can run. It only exists
+	// because github.com/prysmaticlabs/prysm/v5/config/params reads its chain
+	// ID from this package, and that package is pulled in by the BLS wallet
+	// and keymanager code used for validator votes.
 	SepoliaChainConfig = &ChainConfig{
-		ChainID:                 big.NewInt(11155111),
-		HomesteadBlock:          big.NewInt(0),
-		DAOForkBlock:            nil,
-		DAOForkSupport:          true,
-		EIP150Block:             big.NewInt(0),
-		EIP155Block:             big.NewInt(0),
-		EIP158Block:             big.NewInt(0),
-		ByzantiumBlock:          big.NewInt(0),
-		ConstantinopleBlock:     big.NewInt(0),
-		PetersburgBlock:         big.NewInt(0),
-		IstanbulBlock:           big.NewInt(0),
-		MuirGlacierBlock:        big.NewInt(0),
-		BerlinBlock:             big.NewInt(0),
-		LondonBlock:             big.NewInt(0),
-		ArrowGlacierBlock:       nil,
-		GrayGlacierBlock:        nil,
-		TerminalTotalDifficulty: big.NewInt(17_000_000_000_000_000),
-		MergeNetsplitBlock:      big.NewInt(1735371),
-		ShanghaiTime:            newUint64(1677557088),
-		CancunTime:              newUint64(1706655072),
-		PragueTime:              newUint64(1741159776),
-		DepositContractAddress:  common.HexToAddress("0x7f02c3e3c98b133055b8b348b2ac625669ed295d"),
-		Ethash:                  new(EthashConfig),
-		BlobScheduleConfig: &BlobScheduleConfig{
-			Cancun: DefaultCancunBlobConfig,
-			Prague: DefaultPragueBlobConfig,
-		},
-	}
-	// HoodiChainConfig contains the chain parameters to run a node on the Hoodi test network.
-	HoodiChainConfig = &ChainConfig{
-		ChainID:                 big.NewInt(560048),
-		HomesteadBlock:          big.NewInt(0),
-		DAOForkBlock:            nil,
-		DAOForkSupport:          true,
-		EIP150Block:             big.NewInt(0),
-		EIP155Block:             big.NewInt(0),
-		EIP158Block:             big.NewInt(0),
-		ByzantiumBlock:          big.NewInt(0),
-		ConstantinopleBlock:     big.NewInt(0),
-		PetersburgBlock:         big.NewInt(0),
-		IstanbulBlock:           big.NewInt(0),
-		MuirGlacierBlock:        big.NewInt(0),
-		BerlinBlock:             big.NewInt(0),
-		LondonBlock:             big.NewInt(0),
-		ArrowGlacierBlock:       nil,
-		GrayGlacierBlock:        nil,
-		TerminalTotalDifficulty: big.NewInt(0),
-		MergeNetsplitBlock:      big.NewInt(0),
-		ShanghaiTime:            newUint64(0),
-		CancunTime:              newUint64(0),
-		PragueTime:              newUint64(1742999832),
-		DepositContractAddress:  common.HexToAddress("0x00000000219ab540356cBB839Cbe05303d7705Fa"),
-		Ethash:                  new(EthashConfig),
-		BlobScheduleConfig: &BlobScheduleConfig{
-			Cancun: DefaultCancunBlobConfig,
-			Prague: DefaultPragueBlobConfig,
-		},
-	}
-
-	// just for prysm compile pass
-	// GoerliChainConfig contains the chain parameters to run a node on the Görli test network.
-	GoerliChainConfig = &ChainConfig{
-		ChainID:                 big.NewInt(5),
-		HomesteadBlock:          big.NewInt(0),
-		DAOForkBlock:            nil,
-		DAOForkSupport:          true,
-		EIP150Block:             big.NewInt(0),
-		EIP155Block:             big.NewInt(0),
-		EIP158Block:             big.NewInt(0),
-		ByzantiumBlock:          big.NewInt(0),
-		ConstantinopleBlock:     big.NewInt(0),
-		PetersburgBlock:         big.NewInt(0),
-		IstanbulBlock:           big.NewInt(1_561_651),
-		MuirGlacierBlock:        nil,
-		BerlinBlock:             big.NewInt(4_460_644),
-		LondonBlock:             big.NewInt(5_062_605),
-		ArrowGlacierBlock:       nil,
-		TerminalTotalDifficulty: big.NewInt(10_790_000),
-		ShanghaiTime:            newUint64(1678832736),
-		CancunTime:              newUint64(1705473120),
-		Clique: &CliqueConfig{
-			Period: 15,
-			Epoch:  30000,
-		},
-	}
-
-	BSCChainConfig = &ChainConfig{
-		ChainID:             big.NewInt(56),
-		HomesteadBlock:      big.NewInt(0),
-		EIP150Block:         big.NewInt(0),
-		EIP155Block:         big.NewInt(0),
-		EIP158Block:         big.NewInt(0),
-		ByzantiumBlock:      big.NewInt(0),
-		ConstantinopleBlock: big.NewInt(0),
-		PetersburgBlock:     big.NewInt(0),
-		IstanbulBlock:       big.NewInt(0),
-		MuirGlacierBlock:    big.NewInt(0),
-		RamanujanBlock:      big.NewInt(0),
-		NielsBlock:          big.NewInt(0),
-		MirrorSyncBlock:     big.NewInt(5184000),
-		BrunoBlock:          big.NewInt(13082000),
-		EulerBlock:          big.NewInt(18907621),
-		NanoBlock:           big.NewInt(21962149),
-		MoranBlock:          big.NewInt(22107423),
-		GibbsBlock:          big.NewInt(23846001),
-		PlanckBlock:         big.NewInt(27281024),
-		LubanBlock:          big.NewInt(29020050),
-		PlatoBlock:          big.NewInt(30720096),
-		BerlinBlock:         big.NewInt(31302048),
-		LondonBlock:         big.NewInt(31302048),
-		HertzBlock:          big.NewInt(31302048),
-		HertzfixBlock:       big.NewInt(34140700),
-		ShanghaiTime:        newUint64(1705996800), // 2024-01-23 08:00:00 AM UTC
-		KeplerTime:          newUint64(1705996800), // 2024-01-23 08:00:00 AM UTC
-		FeynmanTime:         newUint64(1713419340), // 2024-04-18 05:49:00 AM UTC
-		FeynmanFixTime:      newUint64(1713419340), // 2024-04-18 05:49:00 AM UTC
-		CancunTime:          newUint64(1718863500), // 2024-06-20 06:05:00 AM UTC
-		HaberTime:           newUint64(1718863500), // 2024-06-20 06:05:00 AM UTC
-		HaberFixTime:        newUint64(1727316120), // 2024-09-26 02:02:00 AM UTC
-		BohrTime:            newUint64(1727317200), // 2024-09-26 02:20:00 AM UTC
-		PascalTime:          newUint64(1742436600), // 2025-03-20 02:10:00 AM UTC
-		PragueTime:          newUint64(1742436600), // 2025-03-20 02:10:00 AM UTC
-		LorentzTime:         newUint64(1745903100), // 2025-04-29 05:05:00 AM UTC
-		MaxwellTime:         newUint64(1751250600), // 2025-06-30 02:30:00 AM UTC
-		FermiTime:           nil,
-
-		Parlia: &ParliaConfig{},
-		BlobScheduleConfig: &BlobScheduleConfig{
-			Cancun: DefaultCancunBlobConfig,
-			Prague: DefaultPragueBlobConfigBSC,
-		},
-	}
-
-	ChapelChainConfig = &ChainConfig{
-		ChainID:             big.NewInt(97),
-		HomesteadBlock:      big.NewInt(0),
-		EIP150Block:         big.NewInt(0),
-		EIP155Block:         big.NewInt(0),
-		EIP158Block:         big.NewInt(0),
-		ByzantiumBlock:      big.NewInt(0),
-		ConstantinopleBlock: big.NewInt(0),
-		PetersburgBlock:     big.NewInt(0),
-		IstanbulBlock:       big.NewInt(0),
-		MuirGlacierBlock:    big.NewInt(0),
-		RamanujanBlock:      big.NewInt(1010000),
-		NielsBlock:          big.NewInt(1014369),
-		MirrorSyncBlock:     big.NewInt(5582500),
-		BrunoBlock:          big.NewInt(13837000),
-		EulerBlock:          big.NewInt(19203503),
-		GibbsBlock:          big.NewInt(22800220),
-		NanoBlock:           big.NewInt(23482428),
-		MoranBlock:          big.NewInt(23603940),
-		PlanckBlock:         big.NewInt(28196022),
-		LubanBlock:          big.NewInt(29295050),
-		PlatoBlock:          big.NewInt(29861024),
-		BerlinBlock:         big.NewInt(31103030),
-		LondonBlock:         big.NewInt(31103030),
-		HertzBlock:          big.NewInt(31103030),
-		HertzfixBlock:       big.NewInt(35682300),
-		ShanghaiTime:        newUint64(1702972800), // 2023-12-19 8:00:00 AM UTC
-		KeplerTime:          newUint64(1702972800),
-		FeynmanTime:         newUint64(1710136800), // 2024-03-11 6:00:00 AM UTC
-		FeynmanFixTime:      newUint64(1711342800), // 2024-03-25 5:00:00 AM UTC
-		CancunTime:          newUint64(1713330442), // 2024-04-17 05:07:22 AM UTC
-		HaberTime:           newUint64(1716962820), // 2024-05-29 06:07:00 AM UTC
-		HaberFixTime:        newUint64(1719986788), // 2024-07-03 06:06:28 AM UTC
-		BohrTime:            newUint64(1724116996), // 2024-08-20 01:23:16 AM UTC
-		PascalTime:          newUint64(1740452880), // 2025-02-25 03:08:00 AM UTC
-		PragueTime:          newUint64(1740452880), // 2025-02-25 03:08:00 AM UTC
-		LorentzTime:         newUint64(1744097580), // 2025-04-08 07:33:00 AM UTC
-		MaxwellTime:         newUint64(1748243100), // 2025-05-26 07:05:00 AM UTC
-		FermiTime:           newUint64(1762741500), // 2025-11-10 02:25:00 AM UTC
-
-		Parlia: &ParliaConfig{},
-		BlobScheduleConfig: &BlobScheduleConfig{
-			Cancun: DefaultCancunBlobConfig,
-			Prague: DefaultPragueBlobConfigBSC,
-		},
-	}
-
-	// used to test hard fork upgrade, following https://github.com/bnb-chain/bsc-genesis-contract/blob/master/genesis.json
-	RialtoChainConfig = &ChainConfig{
-		ChainID:             big.NewInt(714),
-		HomesteadBlock:      big.NewInt(0),
-		EIP150Block:         big.NewInt(0),
-		EIP155Block:         big.NewInt(0),
-		EIP158Block:         big.NewInt(0),
-		ByzantiumBlock:      big.NewInt(0),
-		ConstantinopleBlock: big.NewInt(0),
-		PetersburgBlock:     big.NewInt(0),
-		IstanbulBlock:       big.NewInt(0),
-		MuirGlacierBlock:    big.NewInt(0),
-		RamanujanBlock:      big.NewInt(0),
-		NielsBlock:          big.NewInt(0),
-		MirrorSyncBlock:     big.NewInt(1),
-		BrunoBlock:          big.NewInt(1),
-		EulerBlock:          big.NewInt(2),
-		NanoBlock:           big.NewInt(3),
-		MoranBlock:          big.NewInt(3),
-		GibbsBlock:          big.NewInt(4),
-		PlanckBlock:         big.NewInt(5),
-		LubanBlock:          big.NewInt(6),
-		PlatoBlock:          big.NewInt(7),
-		BerlinBlock:         big.NewInt(8),
-		LondonBlock:         big.NewInt(8),
-		HertzBlock:          big.NewInt(8),
-		HertzfixBlock:       big.NewInt(8),
-		ShanghaiTime:        newUint64(0),
-		KeplerTime:          newUint64(0),
-		FeynmanTime:         newUint64(0),
-		FeynmanFixTime:      newUint64(0),
-		CancunTime:          newUint64(0),
-		HaberTime:           newUint64(0),
-		HaberFixTime:        newUint64(0),
-		BohrTime:            newUint64(0),
-		PascalTime:          newUint64(0),
-		PragueTime:          newUint64(0),
-		LorentzTime:         newUint64(0),
-		MaxwellTime:         newUint64(0),
-		// TODO: set them to `0` when passed on the mainnet
-		FermiTime: nil,
-
-		Parlia: &ParliaConfig{},
-		BlobScheduleConfig: &BlobScheduleConfig{
-			Cancun: DefaultCancunBlobConfig,
-			Prague: DefaultPragueBlobConfigBSC,
-		},
+		ChainID: big.NewInt(11155111),
 	}
 
 	L2PChainConfig = &ChainConfig{
@@ -600,14 +311,6 @@ var (
 
 func GetBuiltInChainConfig(ghash common.Hash) *ChainConfig {
 	switch ghash {
-	case MainnetGenesisHash:
-		return MainnetChainConfig
-	case BSCGenesisHash:
-		return BSCChainConfig
-	case ChapelGenesisHash:
-		return ChapelChainConfig
-	case RialtoGenesisHash:
-		return RialtoChainConfig
 	case L2PGenesisHash:
 		return L2PChainConfig
 	default:
@@ -641,17 +344,12 @@ var (
 		Osaka:  DefaultOsakaBlobConfig,
 	}
 
-	DefaultPragueBlobConfigBSC = DefaultCancunBlobConfig
 	DefaultPragueBlobConfigL2P = DefaultCancunBlobConfig
 )
 
 // NetworkNames are user friendly names to use in the chain spec banner.
 var NetworkNames = map[string]string{
-	MainnetChainConfig.ChainID.String(): "mainnet",
-	BSCChainConfig.ChainID.String():     "bsc",
-	ChapelChainConfig.ChainID.String():  "chapel",
-	RialtoChainConfig.ChainID.String():  "rialto",
-	L2PChainConfig.ChainID.String():     "l2p",
+	L2PChainConfig.ChainID.String(): "l2p",
 }
 
 // ChainConfig is the core config which determines the blockchain settings.

@@ -43,43 +43,29 @@ func TestCreation(t *testing.T) {
 		genesis *types.Block
 		cases   []testcase
 	}{
-		// Mainnet test cases
+		// L2P mainnet test cases
 		{
-			params.MainnetChainConfig,
-			core.DefaultGenesisBlock().ToBlock(),
+			params.L2PChainConfig,
+			core.DefaultL2PGenesisBlock().ToBlock(),
 			[]testcase{
-				{0, 0, ID{Hash: checksumToBytes(0xfc64ec04), Next: 1150000}},                    // Unsynced
-				{1149999, 0, ID{Hash: checksumToBytes(0xfc64ec04), Next: 1150000}},              // Last Frontier block
-				{1150000, 0, ID{Hash: checksumToBytes(0x97c2c34c), Next: 1920000}},              // First Homestead block
-				{1919999, 0, ID{Hash: checksumToBytes(0x97c2c34c), Next: 1920000}},              // Last Homestead block
-				{1920000, 0, ID{Hash: checksumToBytes(0x91d1f948), Next: 2463000}},              // First DAO block
-				{2462999, 0, ID{Hash: checksumToBytes(0x91d1f948), Next: 2463000}},              // Last DAO block
-				{2463000, 0, ID{Hash: checksumToBytes(0x7a64da13), Next: 2675000}},              // First Tangerine block
-				{2674999, 0, ID{Hash: checksumToBytes(0x7a64da13), Next: 2675000}},              // Last Tangerine block
-				{2675000, 0, ID{Hash: checksumToBytes(0x3edd5b10), Next: 4370000}},              // First Spurious block
-				{4369999, 0, ID{Hash: checksumToBytes(0x3edd5b10), Next: 4370000}},              // Last Spurious block
-				{4370000, 0, ID{Hash: checksumToBytes(0xa00bc324), Next: 7280000}},              // First Byzantium block
-				{7279999, 0, ID{Hash: checksumToBytes(0xa00bc324), Next: 7280000}},              // Last Byzantium block
-				{7280000, 0, ID{Hash: checksumToBytes(0x668db0af), Next: 9069000}},              // First and last Constantinople, first Petersburg block
-				{9068999, 0, ID{Hash: checksumToBytes(0x668db0af), Next: 9069000}},              // Last Petersburg block
-				{9069000, 0, ID{Hash: checksumToBytes(0x879d6e30), Next: 9200000}},              // First Istanbul and first Muir Glacier block
-				{9199999, 0, ID{Hash: checksumToBytes(0x879d6e30), Next: 9200000}},              // Last Istanbul and first Muir Glacier block
-				{9200000, 0, ID{Hash: checksumToBytes(0xe029e991), Next: 12244000}},             // First Muir Glacier block
-				{12243999, 0, ID{Hash: checksumToBytes(0xe029e991), Next: 12244000}},            // Last Muir Glacier block
-				{12244000, 0, ID{Hash: checksumToBytes(0x0eb440f6), Next: 12965000}},            // First Berlin block
-				{12964999, 0, ID{Hash: checksumToBytes(0x0eb440f6), Next: 12965000}},            // Last Berlin block
-				{12965000, 0, ID{Hash: checksumToBytes(0xb715077d), Next: 13773000}},            // First London block
-				{13772999, 0, ID{Hash: checksumToBytes(0xb715077d), Next: 13773000}},            // Last London block
-				{13773000, 0, ID{Hash: checksumToBytes(0x20c327fc), Next: 15050000}},            // First Arrow Glacier block
-				{15049999, 0, ID{Hash: checksumToBytes(0x20c327fc), Next: 15050000}},            // Last Arrow Glacier block
-				{15050000, 0, ID{Hash: checksumToBytes(0xf0afd0e3), Next: 1681338455}},          // First Gray Glacier block
-				{20000000, 1681338454, ID{Hash: checksumToBytes(0xf0afd0e3), Next: 1681338455}}, // Last Gray Glacier block
-				{20000000, 1681338455, ID{Hash: checksumToBytes(0xdce96c2d), Next: 1710338135}}, // First Shanghai block
-				{30000000, 1710338134, ID{Hash: checksumToBytes(0xdce96c2d), Next: 1710338135}}, // Last Shanghai block
-				{40000000, 1710338135, ID{Hash: checksumToBytes(0x9f3d2254), Next: 1746612311}}, // First Cancun block
-				{30000000, 1746022486, ID{Hash: checksumToBytes(0x9f3d2254), Next: 1746612311}}, // Last Cancun block
-				{30000000, 1746612311, ID{Hash: checksumToBytes(0xc376cf8b), Next: 0}},          // First Prague block
-				{50000000, 2000000000, ID{Hash: checksumToBytes(0xc376cf8b), Next: 0}},          // Future Prague block
+				{0, 0, ID{Hash: checksumToBytes(0xa55701c9), Next: 1}},                     // Unsynced
+				{1, 0, ID{Hash: checksumToBytes(0x78f790fe), Next: 2}},                     // First MirrorSync and Bruno block
+				{2, 0, ID{Hash: checksumToBytes(0x4f304cae), Next: 3}},                     // First Euler block
+				{3, 0, ID{Hash: checksumToBytes(0x1e9eac55), Next: 4}},                     // First Nano and Moran block
+				{4, 0, ID{Hash: checksumToBytes(0x073e0118), Next: 5}},                     // First Gibbs block
+				{5, 0, ID{Hash: checksumToBytes(0x9031b001), Next: 6}},                     // First Planck block
+				{6, 0, ID{Hash: checksumToBytes(0x7ebec67a), Next: 7}},                     // First Luban block
+				{7, 0, ID{Hash: checksumToBytes(0x0f394188), Next: 8}},                     // First Plato block
+				{8, 0, ID{Hash: checksumToBytes(0xa87e764d), Next: 1767884400}},            // First Berlin, London, Hertz and Hertzfix block
+				{100, 1767884399, ID{Hash: checksumToBytes(0xa87e764d), Next: 1767884400}}, // Last pre-Shanghai block
+				{100, 1767884400, ID{Hash: checksumToBytes(0xc5168552), Next: 1767884500}}, // First Shanghai and Kepler block
+				{100, 1767884500, ID{Hash: checksumToBytes(0x61a5dfab), Next: 1767884600}}, // First Feynman and FeynmanFix block
+				{100, 1767884600, ID{Hash: checksumToBytes(0xaf7aa1ac), Next: 1767884610}}, // First Cancun and Haber block
+				{100, 1767884610, ID{Hash: checksumToBytes(0x1c7563a1), Next: 1767884620}}, // First HaberFix block
+				{100, 1767884620, ID{Hash: checksumToBytes(0x9d7b15c4), Next: 1767884630}}, // First Bohr block
+				{100, 1767884630, ID{Hash: checksumToBytes(0xc1265f22), Next: 1767884640}}, // First Pascal and Prague block
+				{100, 1767884640, ID{Hash: checksumToBytes(0xe6abf589), Next: 0}},          // First Lorentz block
+				{1000000, 2000000000, ID{Hash: checksumToBytes(0xe6abf589), Next: 0}},      // Future Lorentz block
 			},
 		},
 	}
@@ -95,12 +81,20 @@ func TestCreation(t *testing.T) {
 // TestValidation tests that a local peer correctly validates and accepts a remote
 // fork ID.
 func TestValidation(t *testing.T) {
-	// Config that has not timestamp enabled
-	// TODO(lightclient): this always needs to be updated when a mainnet timestamp is set.
-	legacyConfig := *params.MainnetChainConfig
-	legacyConfig.ShanghaiTime = nil
-	legacyConfig.CancunTime = nil
-	legacyConfig.PragueTime = nil
+	// Config that stops before any timestamp based fork, so the block based
+	// transitions can be exercised on their own.
+	blockConfig := *params.L2PChainConfig
+	blockConfig.ShanghaiTime = nil
+	blockConfig.KeplerTime = nil
+	blockConfig.FeynmanTime = nil
+	blockConfig.FeynmanFixTime = nil
+	blockConfig.CancunTime = nil
+	blockConfig.HaberTime = nil
+	blockConfig.HaberFixTime = nil
+	blockConfig.BohrTime = nil
+	blockConfig.PascalTime = nil
+	blockConfig.PragueTime = nil
+	blockConfig.LorentzTime = nil
 
 	tests := []struct {
 		config *params.ChainConfig
@@ -113,204 +107,154 @@ func TestValidation(t *testing.T) {
 		// Block based tests
 		//------------------
 
-		// Local is mainnet Gray Glacier, remote announces the same. No future fork is announced.
-		{&legacyConfig, 15050000, 0, ID{Hash: checksumToBytes(0xf0afd0e3), Next: 0}, nil},
+		// Local is on the last block based fork, remote announces the same. No future fork is announced.
+		{&blockConfig, 8, 0, ID{Hash: checksumToBytes(0xa87e764d), Next: 0}, nil},
 
-		// Local is mainnet Gray Glacier, remote announces the same. Remote also announces a next fork
-		// at block 0xffffffff, but that is uncertain.
-		{&legacyConfig, 15050000, 0, ID{Hash: checksumToBytes(0xf0afd0e3), Next: math.MaxUint64}, nil},
+		// Local is on the last block based fork, remote announces the same. Remote also announces a next
+		// fork at block 0xffffffff, but that is uncertain.
+		{&blockConfig, 8, 0, ID{Hash: checksumToBytes(0xa87e764d), Next: math.MaxUint64}, nil},
 
-		// Local is mainnet currently in Byzantium only (so it's aware of Petersburg), remote announces
-		// also Byzantium, but it's not yet aware of Petersburg (e.g. non updated node before the fork).
-		// In this case we don't know if Petersburg passed yet or not.
-		{&legacyConfig, 7279999, 0, ID{Hash: checksumToBytes(0xa00bc324), Next: 0}, nil},
+		// Local is currently in Plato only (so it's aware of Berlin), remote announces also Plato, but
+		// it's not yet aware of Berlin (e.g. non updated node before the fork). In this case we don't
+		// know if Berlin passed yet or not.
+		{&blockConfig, 7, 0, ID{Hash: checksumToBytes(0x0f394188), Next: 0}, nil},
 
-		// Local is mainnet currently in Byzantium only (so it's aware of Petersburg), remote announces
-		// also Byzantium, and it's also aware of Petersburg (e.g. updated node before the fork). We
-		// don't know if Petersburg passed yet (will pass) or not.
-		{&legacyConfig, 7279999, 0, ID{Hash: checksumToBytes(0xa00bc324), Next: 7280000}, nil},
+		// Local is currently in Plato only (so it's aware of Berlin), remote announces also Plato, and
+		// it's also aware of Berlin (e.g. updated node before the fork). We don't know if Berlin passed
+		// yet (will pass) or not.
+		{&blockConfig, 7, 0, ID{Hash: checksumToBytes(0x0f394188), Next: 8}, nil},
 
-		// Local is mainnet currently in Byzantium only (so it's aware of Petersburg), remote announces
-		// also Byzantium, and it's also aware of some random fork (e.g. misconfigured Petersburg). As
-		// neither forks passed at neither nodes, they may mismatch, but we still connect for now.
-		{&legacyConfig, 7279999, 0, ID{Hash: checksumToBytes(0xa00bc324), Next: math.MaxUint64}, nil},
+		// Local is currently in Plato only (so it's aware of Berlin), remote announces also Plato, and
+		// it's also aware of some random fork (e.g. misconfigured Berlin). As neither forks passed at
+		// neither nodes, they may mismatch, but we still connect for now.
+		{&blockConfig, 7, 0, ID{Hash: checksumToBytes(0x0f394188), Next: math.MaxUint64}, nil},
 
-		// Local is mainnet exactly on Petersburg, remote announces Byzantium + knowledge about Petersburg. Remote
-		// is simply out of sync, accept.
-		{&legacyConfig, 7280000, 0, ID{Hash: checksumToBytes(0xa00bc324), Next: 7280000}, nil},
+		// Local is exactly on Berlin, remote announces Plato + knowledge about Berlin. Remote is simply
+		// out of sync, accept.
+		{&blockConfig, 8, 0, ID{Hash: checksumToBytes(0x0f394188), Next: 8}, nil},
 
-		// Local is mainnet Petersburg, remote announces Byzantium + knowledge about Petersburg. Remote
-		// is simply out of sync, accept.
-		{&legacyConfig, 7987396, 0, ID{Hash: checksumToBytes(0xa00bc324), Next: 7280000}, nil},
+		// Local is past Berlin, remote announces Plato + knowledge about Berlin. Remote is simply out of
+		// sync, accept.
+		{&blockConfig, 100, 0, ID{Hash: checksumToBytes(0x0f394188), Next: 8}, nil},
 
-		// Local is mainnet Petersburg, remote announces Spurious + knowledge about Byzantium. Remote
-		// is definitely out of sync. It may or may not need the Petersburg update, we don't know yet.
-		{&legacyConfig, 7987396, 0, ID{Hash: checksumToBytes(0x3edd5b10), Next: 4370000}, nil},
+		// Local is past Berlin, remote announces Luban + knowledge about Plato. Remote is definitely out
+		// of sync. It may or may not need the Berlin update, we don't know yet.
+		{&blockConfig, 100, 0, ID{Hash: checksumToBytes(0x7ebec67a), Next: 7}, nil},
 
-		// Local is mainnet Byzantium, remote announces Petersburg. Local is out of sync, accept.
-		{&legacyConfig, 7279999, 0, ID{Hash: checksumToBytes(0x668db0af), Next: 0}, nil},
+		// Local is in Planck, remote announces Berlin. Local is out of sync, accept.
+		{&blockConfig, 5, 0, ID{Hash: checksumToBytes(0xa87e764d), Next: 0}, nil},
 
-		// Local is mainnet Spurious, remote announces Byzantium, but is not aware of Petersburg. Local
-		// out of sync. Local also knows about a future fork, but that is uncertain yet.
-		{&legacyConfig, 4369999, 0, ID{Hash: checksumToBytes(0xa00bc324), Next: 0}, nil},
+		// Local is past Berlin. Remote announces Plato but is not aware of further forks. Remote needs
+		// a software update.
+		{&blockConfig, 100, 0, ID{Hash: checksumToBytes(0x0f394188), Next: 0}, ErrRemoteStale},
 
-		// Local is mainnet Petersburg. remote announces Byzantium but is not aware of further forks.
-		// Remote needs software update.
-		{&legacyConfig, 7987396, 0, ID{Hash: checksumToBytes(0xa00bc324), Next: 0}, ErrRemoteStale},
+		// Local is past Berlin, and isn't aware of more forks. Remote announces Berlin + 0xffffffff.
+		// Local needs a software update, reject.
+		{&blockConfig, 100, 0, ID{Hash: checksumToBytes(checksumUpdate(0xa87e764d, math.MaxUint64)), Next: 0}, ErrLocalIncompatibleOrStale},
 
-		// Local is mainnet Petersburg, and isn't aware of more forks. Remote announces Petersburg +
-		// 0xffffffff. Local needs software update, reject.
-		{&legacyConfig, 7987396, 0, ID{Hash: checksumToBytes(0x5cddc0e1), Next: 0}, ErrLocalIncompatibleOrStale},
+		// Local is in Plato, and is aware of Berlin. Remote announces Berlin + 0xffffffff. Local needs a
+		// software update, reject.
+		{&blockConfig, 7, 0, ID{Hash: checksumToBytes(checksumUpdate(0xa87e764d, math.MaxUint64)), Next: 0}, ErrLocalIncompatibleOrStale},
 
-		// Local is mainnet Byzantium, and is aware of Petersburg. Remote announces Petersburg +
-		// 0xffffffff. Local needs software update, reject.
-		{&legacyConfig, 7279999, 0, ID{Hash: checksumToBytes(0x5cddc0e1), Next: 0}, ErrLocalIncompatibleOrStale},
+		// Local is past Berlin, remote is on a completely different chain.
+		{&blockConfig, 100, 0, ID{Hash: checksumToBytes(0x12345678), Next: 0}, ErrLocalIncompatibleOrStale},
 
-		// Local is mainnet Petersburg, remote is Rinkeby Petersburg.
-		{&legacyConfig, 7987396, 0, ID{Hash: checksumToBytes(0xafec6b27), Next: 0}, ErrLocalIncompatibleOrStale},
+		// Local is past Berlin, far in the future. Remote announces Gopherium (non existing fork) at some
+		// future block 88888888, for itself, but past block for local. Local is incompatible.
+		{&blockConfig, 88888888, 0, ID{Hash: checksumToBytes(0xa87e764d), Next: 88888888}, ErrLocalIncompatibleOrStale},
 
-		// Local is mainnet Gray Glacier, far in the future. Remote announces Gopherium (non existing fork)
-		// at some future block 88888888, for itself, but past block for local. Local is incompatible.
-		//
-		// This case detects non-upgraded nodes with majority hash power (typical Ropsten mess).
-		{&legacyConfig, 88888888, 0, ID{Hash: checksumToBytes(0xf0afd0e3), Next: 88888888}, ErrLocalIncompatibleOrStale},
-
-		// Local is mainnet Byzantium. Remote is also in Byzantium, but announces Gopherium (non existing
-		// fork) at block 7279999, before Petersburg. Local is incompatible.
-		{&legacyConfig, 7279999, 0, ID{Hash: checksumToBytes(0xa00bc324), Next: 7279999}, ErrLocalIncompatibleOrStale},
+		// Local is in Plato. Remote is also in Plato, but announces Gopherium (non existing fork) at
+		// block 7, before Berlin. Local is incompatible.
+		{&blockConfig, 7, 0, ID{Hash: checksumToBytes(0x0f394188), Next: 7}, ErrLocalIncompatibleOrStale},
 
 		//------------------------------------
 		// Block to timestamp transition tests
 		//------------------------------------
 
-		// Local is mainnet currently in Gray Glacier only (so it's aware of Shanghai), remote announces
-		// also Gray Glacier, but it's not yet aware of Shanghai (e.g. non updated node before the fork).
-		// In this case we don't know if Shanghai passed yet or not.
-		{params.MainnetChainConfig, 15050000, 0, ID{Hash: checksumToBytes(0xf0afd0e3), Next: 0}, nil},
+		// Local is currently in Berlin only (so it's aware of Shanghai), remote announces also Berlin,
+		// but it's not yet aware of Shanghai (e.g. non updated node before the fork). In this case we
+		// don't know if Shanghai passed yet or not.
+		{params.L2PChainConfig, 8, 0, ID{Hash: checksumToBytes(0xa87e764d), Next: 0}, nil},
 
-		// Local is mainnet currently in Gray Glacier only (so it's aware of Shanghai), remote announces
-		// also Gray Glacier, and it's also aware of Shanghai (e.g. updated node before the fork). We
-		// don't know if Shanghai passed yet (will pass) or not.
-		{params.MainnetChainConfig, 15050000, 0, ID{Hash: checksumToBytes(0xf0afd0e3), Next: 1681338455}, nil},
+		// Local is currently in Berlin only (so it's aware of Shanghai), remote announces also Berlin,
+		// and it's also aware of Shanghai (e.g. updated node before the fork). We don't know if Shanghai
+		// passed yet (will pass) or not.
+		{params.L2PChainConfig, 8, 0, ID{Hash: checksumToBytes(0xa87e764d), Next: 1767884400}, nil},
 
-		// Local is mainnet currently in Gray Glacier only (so it's aware of Shanghai), remote announces
-		// also Gray Glacier, and it's also aware of some random fork (e.g. misconfigured Shanghai). As
-		// neither forks passed at neither nodes, they may mismatch, but we still connect for now.
-		{params.MainnetChainConfig, 15050000, 0, ID{Hash: checksumToBytes(0xf0afd0e3), Next: math.MaxUint64}, nil},
+		// Local is currently in Berlin only (so it's aware of Shanghai), remote announces also Berlin,
+		// and it's also aware of some random fork (e.g. misconfigured Shanghai). As neither forks passed
+		// at neither nodes, they may mismatch, but we still connect for now.
+		{params.L2PChainConfig, 8, 0, ID{Hash: checksumToBytes(0xa87e764d), Next: math.MaxUint64}, nil},
 
-		// Local is mainnet exactly on Shanghai, remote announces Gray Glacier + knowledge about Shanghai. Remote
-		// is simply out of sync, accept.
-		{params.MainnetChainConfig, 20000000, 1681338455, ID{Hash: checksumToBytes(0xf0afd0e3), Next: 1681338455}, nil},
+		// Local is exactly on Shanghai, remote announces Berlin + knowledge about Shanghai. Remote is
+		// simply out of sync, accept.
+		{params.L2PChainConfig, 100, 1767884400, ID{Hash: checksumToBytes(0xa87e764d), Next: 1767884400}, nil},
 
-		// Local is mainnet Shanghai, remote announces Gray Glacier + knowledge about Shanghai. Remote
-		// is simply out of sync, accept.
-		{params.MainnetChainConfig, 20123456, 1681338456, ID{Hash: checksumToBytes(0xf0afd0e3), Next: 1681338455}, nil},
+		// Local is in Shanghai, remote announces Berlin + knowledge about Shanghai. Remote is simply out
+		// of sync, accept.
+		{params.L2PChainConfig, 123456, 1767884401, ID{Hash: checksumToBytes(0xa87e764d), Next: 1767884400}, nil},
 
-		// Local is mainnet Shanghai, remote announces Arrow Glacier + knowledge about Gray Glacier. Remote
-		// is definitely out of sync. It may or may not need the Shanghai update, we don't know yet.
-		{params.MainnetChainConfig, 20000000, 1681338455, ID{Hash: checksumToBytes(0x20c327fc), Next: 15050000}, nil},
+		// Local is in Berlin, remote announces Shanghai. Local is out of sync, accept.
+		{params.L2PChainConfig, 8, 0, ID{Hash: checksumToBytes(0xc5168552), Next: 0}, nil},
 
-		// Local is mainnet Gray Glacier, remote announces Shanghai. Local is out of sync, accept.
-		{params.MainnetChainConfig, 15050000, 0, ID{Hash: checksumToBytes(0xdce96c2d), Next: 0}, nil},
+		// Local is in Shanghai. Remote announces Berlin but is not aware of further forks. Remote needs a
+		// software update.
+		{params.L2PChainConfig, 100, 1767884400, ID{Hash: checksumToBytes(0xa87e764d), Next: 0}, ErrRemoteStale},
 
-		// Local is mainnet Arrow Glacier, remote announces Gray Glacier, but is not aware of Shanghai. Local
-		// out of sync. Local also knows about a future fork, but that is uncertain yet.
-		{params.MainnetChainConfig, 13773000, 0, ID{Hash: checksumToBytes(0xf0afd0e3), Next: 0}, nil},
-
-		// Local is mainnet Shanghai. remote announces Gray Glacier but is not aware of further forks.
-		// Remote needs software update.
-		{params.MainnetChainConfig, 20000000, 1681338455, ID{Hash: checksumToBytes(0xf0afd0e3), Next: 0}, ErrRemoteStale},
-
-		// Local is mainnet Gray Glacier, and isn't aware of more forks. Remote announces Gray Glacier +
-		// 0xffffffff. Local needs software update, reject.
-		{params.MainnetChainConfig, 15050000, 0, ID{Hash: checksumToBytes(checksumUpdate(0xf0afd0e3, math.MaxUint64)), Next: 0}, ErrLocalIncompatibleOrStale},
-
-		// Local is mainnet Gray Glacier, and is aware of Shanghai. Remote announces Shanghai +
-		// 0xffffffff. Local needs software update, reject.
-		{params.MainnetChainConfig, 15050000, 0, ID{Hash: checksumToBytes(checksumUpdate(0xdce96c2d, math.MaxUint64)), Next: 0}, ErrLocalIncompatibleOrStale},
-
-		// Local is mainnet Gray Glacier, far in the future. Remote announces Gopherium (non existing fork)
-		// at some future timestamp 8888888888, for itself, but past block for local. Local is incompatible.
-		//
-		// This case detects non-upgraded nodes with majority hash power (typical Ropsten mess).
-		{params.MainnetChainConfig, 888888888, 1660000000, ID{Hash: checksumToBytes(0xf0afd0e3), Next: 1660000000}, ErrLocalIncompatibleOrStale},
-
-		// Local is mainnet Gray Glacier. Remote is also in Gray Glacier, but announces Gopherium (non existing
-		// fork) at block 7279999, before Shanghai. Local is incompatible.
-		{params.MainnetChainConfig, 19999999, 1667999999, ID{Hash: checksumToBytes(0xf0afd0e3), Next: 1667999999}, ErrLocalIncompatibleOrStale},
+		// Local is in Berlin, and is aware of Shanghai. Remote announces Shanghai + 0xffffffff. Local
+		// needs a software update, reject.
+		{params.L2PChainConfig, 8, 0, ID{Hash: checksumToBytes(checksumUpdate(0xc5168552, math.MaxUint64)), Next: 0}, ErrLocalIncompatibleOrStale},
 
 		//----------------------
 		// Timestamp based tests
 		//----------------------
 
-		// Local is mainnet Shanghai, remote announces the same. No future fork is announced.
-		{params.MainnetChainConfig, 20000000, 1681338455, ID{Hash: checksumToBytes(0xdce96c2d), Next: 0}, nil},
+		// Local is on the last fork, remote announces the same. No future fork is announced.
+		{params.L2PChainConfig, 1000000, 1767884640, ID{Hash: checksumToBytes(0xe6abf589), Next: 0}, nil},
 
-		// Local is mainnet Shanghai, remote announces the same. Remote also announces a next fork
-		// at time 0xffffffff, but that is uncertain.
-		{params.MainnetChainConfig, 20000000, 1681338455, ID{Hash: checksumToBytes(0xdce96c2d), Next: math.MaxUint64}, nil},
+		// Local is on the last fork, remote announces the same. Remote also announces a next fork at
+		// time 0xffffffff, but that is uncertain.
+		{params.L2PChainConfig, 1000000, 1767884640, ID{Hash: checksumToBytes(0xe6abf589), Next: math.MaxUint64}, nil},
 
-		// Local is mainnet currently in Shanghai only (so it's aware of Cancun), remote announces
-		// also Shanghai, but it's not yet aware of Cancun (e.g. non updated node before the fork).
-		// In this case we don't know if Cancun passed yet or not.
-		{params.MainnetChainConfig, 20000000, 1668000000, ID{Hash: checksumToBytes(0xdce96c2d), Next: 0}, nil},
+		// Local is currently in Pascal only (so it's aware of Lorentz), remote announces also Pascal, but
+		// it's not yet aware of Lorentz. In this case we don't know if Lorentz passed yet or not.
+		{params.L2PChainConfig, 1000000, 1767884630, ID{Hash: checksumToBytes(0xc1265f22), Next: 0}, nil},
 
-		// Local is mainnet currently in Shanghai only (so it's aware of Cancun), remote announces
-		// also Shanghai, and it's also aware of Cancun (e.g. updated node before the fork). We
-		// don't know if Cancun passed yet (will pass) or not.
-		{params.MainnetChainConfig, 20000000, 1668000000, ID{Hash: checksumToBytes(0xdce96c2d), Next: 1710338135}, nil},
+		// Local is currently in Pascal only (so it's aware of Lorentz), remote announces also Pascal, and
+		// it's also aware of Lorentz. We don't know if Lorentz passed yet (will pass) or not.
+		{params.L2PChainConfig, 1000000, 1767884630, ID{Hash: checksumToBytes(0xc1265f22), Next: 1767884640}, nil},
 
-		// Local is mainnet currently in Shanghai only (so it's aware of Cancun), remote announces
-		// also Shanghai, and it's also aware of some random fork (e.g. misconfigured Cancun). As
-		// neither forks passed at neither nodes, they may mismatch, but we still connect for now.
-		{params.MainnetChainConfig, 20000000, 1668000000, ID{Hash: checksumToBytes(0xdce96c2d), Next: math.MaxUint64}, nil},
+		// Local is exactly on Lorentz, remote announces Pascal + knowledge about Lorentz. Remote is
+		// simply out of sync, accept.
+		{params.L2PChainConfig, 1000000, 1767884640, ID{Hash: checksumToBytes(0xc1265f22), Next: 1767884640}, nil},
 
-		// Local is mainnet exactly on Cancun, remote announces Shanghai + knowledge about Cancun. Remote
-		// is simply out of sync, accept.
-		{params.MainnetChainConfig, 21000000, 1710338135, ID{Hash: checksumToBytes(0xdce96c2d), Next: 1710338135}, nil},
+		// Local is in Lorentz, remote announces Bohr + knowledge about Pascal. Remote is definitely out
+		// of sync. It may or may not need the Lorentz update, we don't know yet.
+		{params.L2PChainConfig, 1000000, 1767884640, ID{Hash: checksumToBytes(0x9d7b15c4), Next: 1767884630}, nil},
 
-		// Local is mainnet Cancun, remote announces Shanghai + knowledge about Cancun. Remote
-		// is simply out of sync, accept.
-		{params.MainnetChainConfig, 21123456, 1710338136, ID{Hash: checksumToBytes(0xdce96c2d), Next: 1710338135}, nil},
+		// Local is in Pascal, remote announces Lorentz. Local is out of sync, accept.
+		{params.L2PChainConfig, 1000000, 1767884630, ID{Hash: checksumToBytes(0xe6abf589), Next: 0}, nil},
 
-		// Local is mainnet Prague, remote announces Shanghai + knowledge about Cancun. Remote
-		// is definitely out of sync. It may or may not need the Prague update, we don't know yet.
-		{params.MainnetChainConfig, 0, 0, ID{Hash: checksumToBytes(0x3edd5b10), Next: 1710338135}, nil},
+		// Local is in Lorentz. Remote announces Pascal but is not aware of further forks. Remote needs a
+		// software update.
+		{params.L2PChainConfig, 1000000, 1767884640, ID{Hash: checksumToBytes(0xc1265f22), Next: 0}, ErrRemoteStale},
 
-		// Local is mainnet Shanghai, remote announces Cancun. Local is out of sync, accept.
-		{params.MainnetChainConfig, 21000000, 1700000000, ID{Hash: checksumToBytes(0x9f3d2254), Next: 0}, nil},
+		// Local is in Lorentz, and isn't aware of more forks. Remote announces Lorentz + 0xffffffff.
+		// Local needs a software update, reject.
+		{params.L2PChainConfig, 1000000, 1767884640, ID{Hash: checksumToBytes(checksumUpdate(0xe6abf589, math.MaxUint64)), Next: 0}, ErrLocalIncompatibleOrStale},
 
-		// Local is mainnet Shanghai, remote announces Cancun, but is not aware of Prague. Local
-		// out of sync. Local also knows about a future fork, but that is uncertain yet.
-		//
-		{params.MainnetChainConfig, 21000000, 1678000000, ID{Hash: checksumToBytes(0xc376cf8b), Next: 0}, nil},
+		// Local is in Lorentz, remote is on a completely different chain.
+		{params.L2PChainConfig, 1000000, 1767884640, ID{Hash: checksumToBytes(0x12345678), Next: 0}, ErrLocalIncompatibleOrStale},
 
-		// Local is mainnet Cancun. remote announces Shanghai but is not aware of further forks.
-		// Remote needs software update.
-		{params.MainnetChainConfig, 21000000, 1710338135, ID{Hash: checksumToBytes(0xdce96c2d), Next: 0}, ErrRemoteStale},
+		// Local is in Lorentz, far in the future. Remote announces Gopherium (non existing fork) at some
+		// future timestamp 8888888888, for itself, but past timestamp for local. Local is incompatible.
+		{params.L2PChainConfig, 88888888, 8888888888, ID{Hash: checksumToBytes(0xe6abf589), Next: 8888888888}, ErrLocalIncompatibleOrStale},
 
-		// Local is mainnet Shanghai, and isn't aware of more forks. Remote announces Shanghai +
-		// 0xffffffff. Local needs software update, reject.
-		{params.MainnetChainConfig, 20000000, 1681338455, ID{Hash: checksumToBytes(checksumUpdate(0xdce96c2d, math.MaxUint64)), Next: 0}, ErrLocalIncompatibleOrStale},
-
-		// Local is mainnet Shanghai, and is aware of Cancun. Remote announces Cancun +
-		// 0xffffffff. Local needs software update, reject.
-		{params.MainnetChainConfig, 20000000, 1668000000, ID{Hash: checksumToBytes(checksumUpdate(0x9f3d2254, math.MaxUint64)), Next: 0}, ErrLocalIncompatibleOrStale},
-
-		// Local is mainnet Shanghai, remote is random Shanghai.
-		{params.MainnetChainConfig, 20000000, 1681338455, ID{Hash: checksumToBytes(0x12345678), Next: 0}, ErrLocalIncompatibleOrStale},
-
-		// Local is mainnet Prague, far in the future. Remote announces Gopherium (non existing fork)
-		// at some future timestamp 8888888888, for itself, but past block for local. Local is incompatible.
-		//
-		// This case detects non-upgraded nodes with majority hash power (typical Ropsten mess).
-		{params.MainnetChainConfig, 88888888, 8888888888, ID{Hash: checksumToBytes(0xc376cf8b), Next: 8888888888}, ErrLocalIncompatibleOrStale},
-
-		// Local is mainnet Shanghai. Remote is also in Shanghai, but announces Gopherium (non existing
-		// fork) at timestamp 1668000000, before Cancun. Local is incompatible.
-		{params.MainnetChainConfig, 20999999, 1699999999, ID{Hash: checksumToBytes(0x71147644), Next: 1700000000}, ErrLocalIncompatibleOrStale},
+		// Local is in Pascal. Remote is also in Pascal, but announces Gopherium (non existing fork) at
+		// timestamp 1767884630, before Lorentz. Local is incompatible.
+		{params.L2PChainConfig, 1000000, 1767884630, ID{Hash: checksumToBytes(0xc1265f22), Next: 1767884630}, ErrLocalIncompatibleOrStale},
 	}
-	genesis := core.DefaultGenesisBlock().ToBlock()
+	genesis := core.DefaultL2PGenesisBlock().ToBlock()
 	for i, tt := range tests {
 		filter := newFilter(tt.config, genesis, func() (uint64, uint64) { return tt.head, tt.time })
 		if err := filter(tt.id); err != tt.err {

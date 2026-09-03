@@ -19,6 +19,7 @@ package discover
 import (
 	"crypto/ecdsa"
 	"fmt"
+	"math/big"
 	"math/rand"
 	"net"
 	"reflect"
@@ -30,6 +31,7 @@ import (
 	"github.com/ethereum/go-ethereum/common/mclock"
 	"github.com/ethereum/go-ethereum/core"
 	"github.com/ethereum/go-ethereum/core/forkid"
+	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/internal/testlog"
 	"github.com/ethereum/go-ethereum/log"
@@ -444,7 +446,7 @@ func TestTable_filterNode(t *testing.T) {
 		Tail   []rlp.RawValue `rlp:"tail"`
 	}
 
-	enrFilter, _ := ParseEthFilter("bsc")
+	enrFilter, _ := ParseEthFilter("l2p")
 
 	// Check test ENR record
 	var r1 enr.Record
@@ -456,7 +458,7 @@ func TestTable_filterNode(t *testing.T) {
 
 	// Check wrong genesis ENR record
 	var r2 enr.Record
-	r2.Set(enr.WithEntry("eth", eth{ForkID: forkid.NewID(params.BSCChainConfig, core.DefaultChapelGenesisBlock().ToBlock(), uint64(0), uint64(0))}))
+	r2.Set(enr.WithEntry("eth", eth{ForkID: forkid.NewID(params.L2PChainConfig, types.NewBlockWithHeader(&types.Header{Number: big.NewInt(0), Extra: []byte("not the l2p genesis")}), uint64(0), uint64(0))}))
 	if enrFilter(&r2) {
 		t.Fatalf("filterNode doesn't work correctly for wrong genesis entry")
 	}
@@ -464,7 +466,7 @@ func TestTable_filterNode(t *testing.T) {
 
 	// Check correct genesis ENR record
 	var r3 enr.Record
-	r3.Set(enr.WithEntry("eth", eth{ForkID: forkid.NewID(params.BSCChainConfig, core.DefaultBSCGenesisBlock().ToBlock(), uint64(0), uint64(0))}))
+	r3.Set(enr.WithEntry("eth", eth{ForkID: forkid.NewID(params.L2PChainConfig, core.DefaultL2PGenesisBlock().ToBlock(), uint64(0), uint64(0))}))
 	if !enrFilter(&r3) {
 		t.Fatalf("filterNode doesn't work correctly for correct genesis entry")
 	}

@@ -169,23 +169,13 @@ var (
 	}
 	NetworkIdFlag = &cli.Uint64Flag{
 		Name:     "networkid",
-		Usage:    "Explicitly set network id (integer)(For testnets: use --chapel instead)",
+		Usage:    "Explicitly set network id (integer)",
 		Value:    ethconfig.Defaults.NetworkId,
-		Category: flags.EthCategory,
-	}
-	BSCMainnetFlag = &cli.BoolFlag{
-		Name:     "bsc-mainnet",
-		Usage:    "BSC mainnet",
 		Category: flags.EthCategory,
 	}
 	L2PMainnetFlag = &cli.BoolFlag{
 		Name:     "mainnet",
 		Usage:    "L2P mainnet",
-		Category: flags.EthCategory,
-	}
-	ChapelFlag = &cli.BoolFlag{
-		Name:     "chapel",
-		Usage:    "Chapel network: pre-configured Proof-of-Stake-Authority BSC test network",
 		Category: flags.EthCategory,
 	}
 	EnableBALFlag = &cli.BoolFlag{
@@ -294,11 +284,6 @@ var (
 						with other peers."`,
 		Value:    ethconfig.Defaults.TriesVerifyMode.String(),
 		Category: flags.FastNodeCategory,
-	}
-	RialtoHash = &cli.StringFlag{
-		Name:     "rialtohash",
-		Usage:    "Manually specify the Rialto Genesis Hash, to trigger builtin network logic",
-		Category: flags.EthCategory,
 	}
 	OverridePassedForkTime = &cli.Uint64Flag{
 		Name:     "override.passedforktime",
@@ -1333,16 +1318,10 @@ Please note that --` + MetricsHTTPFlag.Name + ` must be set to start the server.
 )
 
 var (
-	// TestnetFlags is the flag group of all built-in supported testnets.
-	TestnetFlags = []cli.Flag{
-		ChapelFlag,
-	}
-	MainnetFlags = []cli.Flag{
-		BSCMainnetFlag,
+	// NetworkFlags is the flag group of all built-in supported networks.
+	NetworkFlags = []cli.Flag{
 		L2PMainnetFlag,
 	}
-	// NetworkFlags is the flag group of all built-in supported networks.
-	NetworkFlags = append(MainnetFlags, TestnetFlags...)
 
 	// DatabaseFlags is the flag group of all database flags.
 	DatabaseFlags = []cli.Flag{
@@ -1412,7 +1391,7 @@ func setNodeUserIdent(ctx *cli.Context, cfg *node.Config) {
 //
 // 1. --bootnodes flag
 // 2. Config file
-// 3. Network preset flags (e.g. --holesky)
+// 3. Network preset flags (e.g. --mainnet)
 // 4. default to mainnet nodes
 func setBootstrapNodes(ctx *cli.Context, cfg *p2p.Config) {
 	urls := params.MainnetBootnodes
@@ -2022,7 +2001,6 @@ func setRequiredBlocks(ctx *cli.Context, cfg *ethconfig.Config) {
 // SetEthConfig applies eth-related command line flags to the config.
 func SetEthConfig(ctx *cli.Context, stack *node.Node, cfg *ethconfig.Config) {
 	// Avoid conflicting network flags, don't allow network id override on preset networks
-	flags.CheckExclusive(ctx, BSCMainnetFlag, DeveloperFlag, NetworkIdFlag)
 	flags.CheckExclusive(ctx, L2PMainnetFlag, DeveloperFlag, NetworkIdFlag)
 	flags.CheckExclusive(ctx, DeveloperFlag, ExternalSignerFlag) // Can't use both ephemeral unlocked and external signer
 
@@ -2254,24 +2232,12 @@ func SetEthConfig(ctx *cli.Context, stack *node.Node, cfg *ethconfig.Config) {
 	}
 	// Override any default configs for hard coded networks.
 	switch {
-	case ctx.Bool(BSCMainnetFlag.Name):
-		if !ctx.IsSet(NetworkIdFlag.Name) {
-			cfg.NetworkId = 56
-		}
-		cfg.Genesis = core.DefaultBSCGenesisBlock()
-		SetDNSDiscoveryDefaults(cfg, params.BSCGenesisHash)
 	case ctx.Bool(L2PMainnetFlag.Name):
 		if !ctx.IsSet(NetworkIdFlag.Name) {
 			cfg.NetworkId = 12216
 		}
 		cfg.Genesis = core.DefaultL2PGenesisBlock()
 		SetDNSDiscoveryDefaults(cfg, params.L2PGenesisHash)
-	case ctx.Bool(ChapelFlag.Name) || cfg.NetworkId == 97:
-		if !ctx.IsSet(NetworkIdFlag.Name) {
-			cfg.NetworkId = 97
-		}
-		cfg.Genesis = core.DefaultChapelGenesisBlock()
-		SetDNSDiscoveryDefaults(cfg, params.ChapelGenesisHash)
 	case ctx.Bool(DeveloperFlag.Name):
 		cfg.NetworkId = 1337
 		cfg.SyncMode = ethconfig.FullSync
@@ -2361,8 +2327,8 @@ func SetEthConfig(ctx *cli.Context, stack *node.Node, cfg *ethconfig.Config) {
 			cfg.Miner.GasPrice = big.NewInt(1)
 		}
 	default:
-		if cfg.NetworkId == 1 {
-			SetDNSDiscoveryDefaults(cfg, params.MainnetGenesisHash)
+		if cfg.NetworkId == 12216 {
+			SetDNSDiscoveryDefaults(cfg, params.L2PGenesisHash)
 		}
 	}
 	// Set any dangling config values
@@ -2780,12 +2746,8 @@ func DialRPCWithHeaders(endpoint string, headers []string) (*rpc.Client, error) 
 func MakeGenesis(ctx *cli.Context) *core.Genesis {
 	var genesis *core.Genesis
 	switch {
-	case ctx.Bool(BSCMainnetFlag.Name):
-		genesis = core.DefaultBSCGenesisBlock()
 	case ctx.Bool(L2PMainnetFlag.Name):
 		genesis = core.DefaultL2PGenesisBlock()
-	case ctx.Bool(ChapelFlag.Name):
-		genesis = core.DefaultChapelGenesisBlock()
 	case ctx.Bool(DeveloperFlag.Name):
 		Fatalf("Developer chains are ephemeral")
 	}

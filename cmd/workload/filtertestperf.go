@@ -35,8 +35,6 @@ var (
 		ArgsUsage: "<RPC endpoint URL>",
 		Action:    filterPerfCmd,
 		Flags: []cli.Flag{
-			testSepoliaFlag,
-			testMainnetFlag,
 			filterQueryFileFlag,
 			filterErrorFileFlag,
 		},

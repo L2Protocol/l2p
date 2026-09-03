@@ -17,22 +17,16 @@
 package main
 
 import (
-	"embed"
 	"fmt"
 	"io/fs"
 	"os"
 
-	"github.com/ethereum/go-ethereum/core/history"
 	"github.com/ethereum/go-ethereum/internal/flags"
 	"github.com/ethereum/go-ethereum/internal/utesting"
 	"github.com/ethereum/go-ethereum/log"
-	"github.com/ethereum/go-ethereum/params"
 	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/urfave/cli/v2"
 )
-
-//go:embed queries
-var builtinTestFiles embed.FS
 
 var (
 	runTestCommand = &cli.Command{
@@ -45,8 +39,6 @@ var (
 			testTAPFlag,
 			testSlowFlag,
 			testArchiveFlag,
-			testSepoliaFlag,
-			testMainnetFlag,
 			filterQueryFileFlag,
 			historyTestFileFlag,
 			traceTestFileFlag,
@@ -73,16 +65,6 @@ var (
 		Name:     "archive",
 		Usage:    "Enable archive tests",
 		Value:    false,
-		Category: flags.TestingCategory,
-	}
-	testSepoliaFlag = &cli.BoolFlag{
-		Name:     "sepolia",
-		Usage:    "Use test cases for sepolia network",
-		Category: flags.TestingCategory,
-	}
-	testMainnetFlag = &cli.BoolFlag{
-		Name:     "mainnet",
-		Usage:    "Use test cases for mainnet network",
 		Category: flags.TestingCategory,
 	}
 )
@@ -118,29 +100,14 @@ func validateHistoryPruneErr(err error, blockNum uint64, historyPruneBlock *uint
 }
 
 func testConfigFromCLI(ctx *cli.Context) (cfg testConfig) {
-	flags.CheckExclusive(ctx, testMainnetFlag, testSepoliaFlag)
-	if (ctx.IsSet(testMainnetFlag.Name) || ctx.IsSet(testSepoliaFlag.Name)) && ctx.IsSet(filterQueryFileFlag.Name) {
-		exit(filterQueryFileFlag.Name + " cannot be used with " + testMainnetFlag.Name + " or " + testSepoliaFlag.Name)
-	}
-
 	// configure ethclient
 	cfg.client = makeClient(ctx)
 
 	// configure test files
-	switch {
-	case ctx.Bool(testMainnetFlag.Name):
-		cfg.fsys = builtinTestFiles
-		cfg.filterQueryFile = "queries/filter_queries_mainnet.json"
-		cfg.historyTestFile = "queries/history_mainnet.json"
-		cfg.historyPruneBlock = new(uint64)
-		*cfg.historyPruneBlock = history.PrunePoints[params.MainnetGenesisHash].BlockNumber
-		cfg.traceTestFile = "queries/trace_mainnet.json"
-	default:
-		cfg.fsys = os.DirFS(".")
-		cfg.filterQueryFile = ctx.String(filterQueryFileFlag.Name)
-		cfg.historyTestFile = ctx.String(historyTestFileFlag.Name)
-		cfg.traceTestFile = ctx.String(traceTestFileFlag.Name)
-	}
+	cfg.fsys = os.DirFS(".")
+	cfg.filterQueryFile = ctx.String(filterQueryFileFlag.Name)
+	cfg.historyTestFile = ctx.String(historyTestFileFlag.Name)
+	cfg.traceTestFile = ctx.String(traceTestFileFlag.Name)
 	return cfg
 }
 

@@ -21,10 +21,15 @@ import (
 	"math/big"
 	"sort"
 
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/params"
 )
 
 func u64(val uint64) *uint64 { return &val }
+
+// depositContractAddress is the deposit contract address the execution spec
+// tests expect EIP-6110 deposit requests to originate from.
+var depositContractAddress = common.HexToAddress("0x00000000219ab540356cbb839cbe05303d7705fa")
 
 // Forks table defines supported forks and their chain config.
 var Forks = map[string]*params.ChainConfig{
@@ -379,7 +384,7 @@ var Forks = map[string]*params.ChainConfig{
 		ShanghaiTime:            u64(0),
 		CancunTime:              u64(0),
 		PragueTime:              u64(0),
-		DepositContractAddress:  params.MainnetChainConfig.DepositContractAddress,
+		DepositContractAddress:  depositContractAddress,
 		BlobScheduleConfig: &params.BlobScheduleConfig{
 			Cancun: params.DefaultCancunBlobConfig,
 			Prague: params.DefaultPragueBlobConfig,
@@ -404,7 +409,7 @@ var Forks = map[string]*params.ChainConfig{
 		ShanghaiTime:            u64(0),
 		CancunTime:              u64(0),
 		PragueTime:              u64(15_000),
-		DepositContractAddress:  params.MainnetChainConfig.DepositContractAddress,
+		DepositContractAddress:  depositContractAddress,
 		BlobScheduleConfig: &params.BlobScheduleConfig{
 			Cancun: params.DefaultCancunBlobConfig,
 			Prague: params.DefaultPragueBlobConfig,
@@ -430,7 +435,7 @@ var Forks = map[string]*params.ChainConfig{
 		CancunTime:              u64(0),
 		PragueTime:              u64(0),
 		OsakaTime:               u64(0),
-		DepositContractAddress:  params.MainnetChainConfig.DepositContractAddress,
+		DepositContractAddress:  depositContractAddress,
 		BlobScheduleConfig: &params.BlobScheduleConfig{
 			Cancun: params.DefaultCancunBlobConfig,
 			Prague: params.DefaultPragueBlobConfig,
@@ -457,7 +462,7 @@ var Forks = map[string]*params.ChainConfig{
 		CancunTime:              u64(0),
 		PragueTime:              u64(0),
 		OsakaTime:               u64(15_000),
-		DepositContractAddress:  params.MainnetChainConfig.DepositContractAddress,
+		DepositContractAddress:  depositContractAddress,
 		BlobScheduleConfig: &params.BlobScheduleConfig{
 			Cancun: params.DefaultCancunBlobConfig,
 			Prague: params.DefaultPragueBlobConfig,

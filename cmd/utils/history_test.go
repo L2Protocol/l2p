@@ -47,8 +47,9 @@ func TestHistoryImportAndExport(t *testing.T) {
 	var (
 		key, _  = crypto.HexToECDSA("b71c71a67e1177ad4e901695e1b4b9ee17ae16c6668d313eac2f96dbcda3f291")
 		address = crypto.PubkeyToAddress(key.PublicKey)
+		config  = testChainConfig()
 		genesis = &core.Genesis{
-			Config: params.TestChainConfig,
+			Config: config,
 			Alloc:  types.GenesisAlloc{address: {Balance: big.NewInt(1000000000000000000)}},
 		}
 		signer = types.LatestSigner(genesis.Config)
@@ -101,7 +102,7 @@ func TestHistoryImportAndExport(t *testing.T) {
 	checksums := strings.Split(string(b), "\n")
 
 	// Verify each Era.
-	entries, _ := era.ReadDir(dir, "mainnet")
+	entries, _ := era.ReadDir(dir, "l2p")
 	for i, filename := range entries {
 		func() {
 			f, err := os.Open(filepath.Join(dir, filename))
@@ -170,10 +171,18 @@ func TestHistoryImportAndExport(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unable to initialize chain: %v", err)
 	}
-	if err := ImportHistory(imported, dir, "mainnet"); err != nil {
+	if err := ImportHistory(imported, dir, "l2p"); err != nil {
 		t.Fatalf("failed to import chain: %v", err)
 	}
 	if have, want := imported.CurrentHeader(), chain.CurrentHeader(); have.Hash() != want.Hash() {
 		t.Fatalf("imported chain does not match expected, have (%d, %s) want (%d, %s)", have.Number, have.Hash(), want.Number, want.Hash())
 	}
+}
+
+// testChainConfig returns the generic test chain config, but carrying the L2P
+// chain ID so that exported era files are named after a known network.
+func testChainConfig() *params.ChainConfig {
+	config := *params.TestChainConfig
+	config.ChainID = params.L2PChainConfig.ChainID
+	return &config
 }

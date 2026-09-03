@@ -37,24 +37,6 @@ type epochCheckpoint struct {
 	FirstIndex  uint64 // first log value index of the given block
 }
 
-//go:embed checkpoints_mainnet.json
-var checkpointsMainnetJSON []byte
-
-//go:embed checkpoints_sepolia.json
-var checkpointsSepoliaJSON []byte
-
-//go:embed checkpoints_holesky.json
-var checkpointsHoleskyJSON []byte
-
-//go:embed checkpoints_hoodi.json
-var checkpointsHoodiJSON []byte
-
-//go:embed checkpoints_bsc_chapel.json
-var checkpointsBSCChapelJSON []byte
-
-//go:embed checkpoints_bsc_mainnet.json
-var checkpointsBSCMainnetJSON []byte
-
 //go:embed checkpoints_l2p_mainnet.json
 var checkpointsL2PMainnetJSON []byte
 
@@ -62,12 +44,6 @@ var checkpointsL2PMainnetJSON []byte
 // checkpoint set is autodetected by the indexer once the canonical chain is
 // known.
 var checkpoints = []checkpointList{
-	decodeCheckpoints(checkpointsMainnetJSON),
-	decodeCheckpoints(checkpointsSepoliaJSON),
-	decodeCheckpoints(checkpointsHoleskyJSON),
-	decodeCheckpoints(checkpointsHoodiJSON),
-	decodeCheckpoints(checkpointsBSCChapelJSON),
-	decodeCheckpoints(checkpointsBSCMainnetJSON),
 	decodeCheckpoints(checkpointsL2PMainnetJSON),
 }
 

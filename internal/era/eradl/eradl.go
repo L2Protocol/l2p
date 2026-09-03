@@ -18,7 +18,6 @@
 package eradl
 
 import (
-	_ "embed"
 	"fmt"
 	"net/url"
 	"path/filepath"
@@ -29,11 +28,9 @@ import (
 	"github.com/ethereum/go-ethereum/internal/era"
 )
 
-//go:embed checksums_mainnet.txt
-var mainnetDB []byte
-
-//go:embed checksums_sepolia.txt
-var sepoliaDB []byte
+// checksumDBs holds the era1 file checksums per network. Add an entry here to
+// enable 'geth download-era' for a network.
+var checksumDBs = map[string][]byte{}
 
 type Loader struct {
 	csdb    *download.ChecksumDB
@@ -43,13 +40,8 @@ type Loader struct {
 
 // New creates an era1 loader for the given server URL and network name.
 func New(baseURL string, network string) (*Loader, error) {
-	var checksums []byte
-	switch network {
-	case "mainnet":
-		checksums = mainnetDB
-	case "sepolia":
-		checksums = sepoliaDB
-	default:
+	checksums, ok := checksumDBs[network]
+	if !ok {
 		return nil, fmt.Errorf("missing era1 checksum definitions for network %q", network)
 	}
 
