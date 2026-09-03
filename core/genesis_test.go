@@ -72,26 +72,26 @@ func testSetupGenesis(t *testing.T, scheme string) {
 			fn: func(db ethdb.Database) (*params.ChainConfig, common.Hash, *params.ConfigCompatError, error) {
 				return SetupGenesisBlock(db, triedb.NewDatabase(db, newDbConfig(scheme)), nil)
 			},
-			wantHash:   params.L2PGenesisHash,
-			wantConfig: params.L2PChainConfig,
+			wantHash:   params.MainnetGenesisHash,
+			wantConfig: params.MainnetChainConfig,
 		},
 		{
 			name: "mainnet block in DB, genesis == nil",
 			fn: func(db ethdb.Database) (*params.ChainConfig, common.Hash, *params.ConfigCompatError, error) {
-				DefaultL2PGenesisBlock().MustCommit(db, triedb.NewDatabase(db, newDbConfig(scheme)))
+				DefaultGenesisBlock().MustCommit(db, triedb.NewDatabase(db, newDbConfig(scheme)))
 				return SetupGenesisBlock(db, triedb.NewDatabase(db, newDbConfig(scheme)), nil)
 			},
-			wantHash:   params.L2PGenesisHash,
-			wantConfig: params.L2PChainConfig,
+			wantHash:   params.MainnetGenesisHash,
+			wantConfig: params.MainnetChainConfig,
 		},
 		{
 			name: "mainnet block in DB, genesis == mainnet",
 			fn: func(db ethdb.Database) (*params.ChainConfig, common.Hash, *params.ConfigCompatError, error) {
-				DefaultL2PGenesisBlock().MustCommit(db, triedb.NewDatabase(db, newDbConfig(scheme)))
-				return SetupGenesisBlock(db, triedb.NewDatabase(db, newDbConfig(scheme)), DefaultL2PGenesisBlock())
+				DefaultGenesisBlock().MustCommit(db, triedb.NewDatabase(db, newDbConfig(scheme)))
+				return SetupGenesisBlock(db, triedb.NewDatabase(db, newDbConfig(scheme)), DefaultGenesisBlock())
 			},
-			wantHash:   params.L2PGenesisHash,
-			wantConfig: params.L2PChainConfig,
+			wantHash:   params.MainnetGenesisHash,
+			wantConfig: params.MainnetChainConfig,
 		},
 		{
 			name: "custom block in DB, genesis == nil",
@@ -108,9 +108,9 @@ func testSetupGenesis(t *testing.T, scheme string) {
 			fn: func(db ethdb.Database) (*params.ChainConfig, common.Hash, *params.ConfigCompatError, error) {
 				tdb := triedb.NewDatabase(db, newDbConfig(scheme))
 				customg.Commit(db, tdb)
-				return SetupGenesisBlock(db, tdb, DefaultL2PGenesisBlock())
+				return SetupGenesisBlock(db, tdb, DefaultGenesisBlock())
 			},
-			wantErr: &GenesisMismatchError{Stored: customghash, New: params.L2PGenesisHash},
+			wantErr: &GenesisMismatchError{Stored: customghash, New: params.MainnetGenesisHash},
 		},
 		{
 			name: "compatible config in DB",
@@ -184,7 +184,7 @@ func TestGenesisHashes(t *testing.T) {
 		genesis *Genesis
 		want    common.Hash
 	}{
-		{DefaultL2PGenesisBlock(), params.L2PGenesisHash},
+		{DefaultGenesisBlock(), params.MainnetGenesisHash},
 	} {
 		// Test via MustCommit
 		db := rawdb.NewMemoryDatabase()
@@ -261,23 +261,23 @@ func TestConfigOrDefault(t *testing.T) {
 	if defaultGenesis.Config.PlanckBlock != nil {
 		t.Errorf("initial config should have PlanckBlock = nil, but instead PlanckBlock = %v", defaultGenesis.Config.PlanckBlock)
 	}
-	gHash := params.L2PGenesisHash
+	gHash := params.MainnetGenesisHash
 	config := defaultGenesis.chainConfigOrDefault(gHash, nil)
 
-	if config.ChainID.Cmp(params.L2PChainConfig.ChainID) != 0 {
-		t.Errorf("ChainID of resulting config should be %v, but is %v instead", params.L2PChainConfig.ChainID, config.ChainID)
+	if config.ChainID.Cmp(params.MainnetChainConfig.ChainID) != 0 {
+		t.Errorf("ChainID of resulting config should be %v, but is %v instead", params.MainnetChainConfig.ChainID, config.ChainID)
 	}
 
-	if config.HomesteadBlock.Cmp(params.L2PChainConfig.HomesteadBlock) != 0 {
-		t.Errorf("resulting config should have HomesteadBlock = %v, but instead is %v", params.L2PChainConfig, config.HomesteadBlock)
+	if config.HomesteadBlock.Cmp(params.MainnetChainConfig.HomesteadBlock) != 0 {
+		t.Errorf("resulting config should have HomesteadBlock = %v, but instead is %v", params.MainnetChainConfig, config.HomesteadBlock)
 	}
 
 	if config.PlanckBlock == nil {
-		t.Errorf("resulting config should have PlanckBlock = %v , but instead is nil", params.L2PChainConfig.PlanckBlock)
+		t.Errorf("resulting config should have PlanckBlock = %v , but instead is nil", params.MainnetChainConfig.PlanckBlock)
 	}
 
-	if config.PlanckBlock.Cmp(params.L2PChainConfig.PlanckBlock) != 0 {
-		t.Errorf("resulting config should have PlanckBlock = %v , but instead is %v", params.L2PChainConfig.PlanckBlock, config.PlanckBlock)
+	if config.PlanckBlock.Cmp(params.MainnetChainConfig.PlanckBlock) != 0 {
+		t.Errorf("resulting config should have PlanckBlock = %v , but instead is %v", params.MainnetChainConfig.PlanckBlock, config.PlanckBlock)
 	}
 }
 

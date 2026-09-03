@@ -225,8 +225,8 @@ func getGenesisState(db ethdb.Database, blockhash common.Hash) (alloc types.Gene
 	// - private network, can't recover
 	var genesis *Genesis
 	switch blockhash {
-	case params.L2PGenesisHash:
-		genesis = DefaultL2PGenesisBlock()
+	case params.MainnetGenesisHash:
+		genesis = DefaultGenesisBlock()
 	}
 	if genesis != nil {
 		return genesis.Alloc, nil
@@ -330,7 +330,7 @@ func SetupGenesisBlockWithOverride(db ethdb.Database, triedb *triedb.Database, g
 	if (ghash == common.Hash{}) {
 		if genesis == nil {
 			log.Info("Writing default L2P mainnet genesis block")
-			genesis = DefaultL2PGenesisBlock()
+			genesis = DefaultGenesisBlock()
 		} else {
 			log.Info("Writing custom genesis block")
 		}
@@ -356,7 +356,7 @@ func SetupGenesisBlockWithOverride(db ethdb.Database, triedb *triedb.Database, g
 		// genesis will be used as default and the initialization will always fail.
 		if genesis == nil {
 			log.Info("Writing default L2P mainnet genesis block")
-			genesis = DefaultL2PGenesisBlock()
+			genesis = DefaultGenesisBlock()
 		} else {
 			log.Info("Writing custom genesis block")
 		}
@@ -452,7 +452,7 @@ func LoadChainConfig(db ethdb.Database, genesis *Genesis) (cfg *params.ChainConf
 	}
 	// There is no stored chain config and no new config provided,
 	// In this case the default chain config(mainnet) will be used
-	return params.L2PChainConfig, params.L2PGenesisHash, nil
+	return params.MainnetChainConfig, params.MainnetGenesisHash, nil
 }
 
 // chainConfigOrDefault retrieves the attached chain configuration. If the genesis
@@ -633,11 +633,11 @@ func EnableVerkleAtGenesis(db ethdb.Database, genesis *Genesis) (bool, error) {
 	return false, nil
 }
 
-// DefaultL2PGenesisBlock returns the L2P mainnet genesis block.
-func DefaultL2PGenesisBlock() *Genesis {
-	alloc := decodePrealloc(l2pMainnetAllocData)
+// DefaultGenesisBlock returns the L2P mainnet genesis block.
+func DefaultGenesisBlock() *Genesis {
+	alloc := decodePrealloc(mainnetAllocData)
 	return &Genesis{
-		Config:     params.L2PChainConfig,
+		Config:     params.MainnetChainConfig,
 		Nonce:      0,
 		ExtraData:  hexutil.MustDecode("0x0000000000000000000000000000000000000000000000000000000000000000ae11fb1f89c83c3ad49636a283732a3692de76f998803ed812d591b5dcc319652645036b6ca32d1bda209d1508a1680be75751d0a9923d74997d90f20000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"),
 		GasLimit:   40000000,

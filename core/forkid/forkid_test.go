@@ -45,8 +45,8 @@ func TestCreation(t *testing.T) {
 	}{
 		// L2P mainnet test cases
 		{
-			params.L2PChainConfig,
-			core.DefaultL2PGenesisBlock().ToBlock(),
+			params.MainnetChainConfig,
+			core.DefaultGenesisBlock().ToBlock(),
 			[]testcase{
 				{0, 0, ID{Hash: checksumToBytes(0xa55701c9), Next: 1}},                     // Unsynced
 				{1, 0, ID{Hash: checksumToBytes(0x78f790fe), Next: 2}},                     // First MirrorSync and Bruno block
@@ -83,7 +83,7 @@ func TestCreation(t *testing.T) {
 func TestValidation(t *testing.T) {
 	// Config that stops before any timestamp based fork, so the block based
 	// transitions can be exercised on their own.
-	blockConfig := *params.L2PChainConfig
+	blockConfig := *params.MainnetChainConfig
 	blockConfig.ShanghaiTime = nil
 	blockConfig.KeplerTime = nil
 	blockConfig.FeynmanTime = nil
@@ -174,87 +174,87 @@ func TestValidation(t *testing.T) {
 		// Local is currently in Berlin only (so it's aware of Shanghai), remote announces also Berlin,
 		// but it's not yet aware of Shanghai (e.g. non updated node before the fork). In this case we
 		// don't know if Shanghai passed yet or not.
-		{params.L2PChainConfig, 8, 0, ID{Hash: checksumToBytes(0xa87e764d), Next: 0}, nil},
+		{params.MainnetChainConfig, 8, 0, ID{Hash: checksumToBytes(0xa87e764d), Next: 0}, nil},
 
 		// Local is currently in Berlin only (so it's aware of Shanghai), remote announces also Berlin,
 		// and it's also aware of Shanghai (e.g. updated node before the fork). We don't know if Shanghai
 		// passed yet (will pass) or not.
-		{params.L2PChainConfig, 8, 0, ID{Hash: checksumToBytes(0xa87e764d), Next: 1767884400}, nil},
+		{params.MainnetChainConfig, 8, 0, ID{Hash: checksumToBytes(0xa87e764d), Next: 1767884400}, nil},
 
 		// Local is currently in Berlin only (so it's aware of Shanghai), remote announces also Berlin,
 		// and it's also aware of some random fork (e.g. misconfigured Shanghai). As neither forks passed
 		// at neither nodes, they may mismatch, but we still connect for now.
-		{params.L2PChainConfig, 8, 0, ID{Hash: checksumToBytes(0xa87e764d), Next: math.MaxUint64}, nil},
+		{params.MainnetChainConfig, 8, 0, ID{Hash: checksumToBytes(0xa87e764d), Next: math.MaxUint64}, nil},
 
 		// Local is exactly on Shanghai, remote announces Berlin + knowledge about Shanghai. Remote is
 		// simply out of sync, accept.
-		{params.L2PChainConfig, 100, 1767884400, ID{Hash: checksumToBytes(0xa87e764d), Next: 1767884400}, nil},
+		{params.MainnetChainConfig, 100, 1767884400, ID{Hash: checksumToBytes(0xa87e764d), Next: 1767884400}, nil},
 
 		// Local is in Shanghai, remote announces Berlin + knowledge about Shanghai. Remote is simply out
 		// of sync, accept.
-		{params.L2PChainConfig, 123456, 1767884401, ID{Hash: checksumToBytes(0xa87e764d), Next: 1767884400}, nil},
+		{params.MainnetChainConfig, 123456, 1767884401, ID{Hash: checksumToBytes(0xa87e764d), Next: 1767884400}, nil},
 
 		// Local is in Berlin, remote announces Shanghai. Local is out of sync, accept.
-		{params.L2PChainConfig, 8, 0, ID{Hash: checksumToBytes(0xc5168552), Next: 0}, nil},
+		{params.MainnetChainConfig, 8, 0, ID{Hash: checksumToBytes(0xc5168552), Next: 0}, nil},
 
 		// Local is in Shanghai. Remote announces Berlin but is not aware of further forks. Remote needs a
 		// software update.
-		{params.L2PChainConfig, 100, 1767884400, ID{Hash: checksumToBytes(0xa87e764d), Next: 0}, ErrRemoteStale},
+		{params.MainnetChainConfig, 100, 1767884400, ID{Hash: checksumToBytes(0xa87e764d), Next: 0}, ErrRemoteStale},
 
 		// Local is in Berlin, and is aware of Shanghai. Remote announces Shanghai + 0xffffffff. Local
 		// needs a software update, reject.
-		{params.L2PChainConfig, 8, 0, ID{Hash: checksumToBytes(checksumUpdate(0xc5168552, math.MaxUint64)), Next: 0}, ErrLocalIncompatibleOrStale},
+		{params.MainnetChainConfig, 8, 0, ID{Hash: checksumToBytes(checksumUpdate(0xc5168552, math.MaxUint64)), Next: 0}, ErrLocalIncompatibleOrStale},
 
 		//----------------------
 		// Timestamp based tests
 		//----------------------
 
 		// Local is on the last fork, remote announces the same. No future fork is announced.
-		{params.L2PChainConfig, 1000000, 1767884640, ID{Hash: checksumToBytes(0xe6abf589), Next: 0}, nil},
+		{params.MainnetChainConfig, 1000000, 1767884640, ID{Hash: checksumToBytes(0xe6abf589), Next: 0}, nil},
 
 		// Local is on the last fork, remote announces the same. Remote also announces a next fork at
 		// time 0xffffffff, but that is uncertain.
-		{params.L2PChainConfig, 1000000, 1767884640, ID{Hash: checksumToBytes(0xe6abf589), Next: math.MaxUint64}, nil},
+		{params.MainnetChainConfig, 1000000, 1767884640, ID{Hash: checksumToBytes(0xe6abf589), Next: math.MaxUint64}, nil},
 
 		// Local is currently in Pascal only (so it's aware of Lorentz), remote announces also Pascal, but
 		// it's not yet aware of Lorentz. In this case we don't know if Lorentz passed yet or not.
-		{params.L2PChainConfig, 1000000, 1767884630, ID{Hash: checksumToBytes(0xc1265f22), Next: 0}, nil},
+		{params.MainnetChainConfig, 1000000, 1767884630, ID{Hash: checksumToBytes(0xc1265f22), Next: 0}, nil},
 
 		// Local is currently in Pascal only (so it's aware of Lorentz), remote announces also Pascal, and
 		// it's also aware of Lorentz. We don't know if Lorentz passed yet (will pass) or not.
-		{params.L2PChainConfig, 1000000, 1767884630, ID{Hash: checksumToBytes(0xc1265f22), Next: 1767884640}, nil},
+		{params.MainnetChainConfig, 1000000, 1767884630, ID{Hash: checksumToBytes(0xc1265f22), Next: 1767884640}, nil},
 
 		// Local is exactly on Lorentz, remote announces Pascal + knowledge about Lorentz. Remote is
 		// simply out of sync, accept.
-		{params.L2PChainConfig, 1000000, 1767884640, ID{Hash: checksumToBytes(0xc1265f22), Next: 1767884640}, nil},
+		{params.MainnetChainConfig, 1000000, 1767884640, ID{Hash: checksumToBytes(0xc1265f22), Next: 1767884640}, nil},
 
 		// Local is in Lorentz, remote announces Bohr + knowledge about Pascal. Remote is definitely out
 		// of sync. It may or may not need the Lorentz update, we don't know yet.
-		{params.L2PChainConfig, 1000000, 1767884640, ID{Hash: checksumToBytes(0x9d7b15c4), Next: 1767884630}, nil},
+		{params.MainnetChainConfig, 1000000, 1767884640, ID{Hash: checksumToBytes(0x9d7b15c4), Next: 1767884630}, nil},
 
 		// Local is in Pascal, remote announces Lorentz. Local is out of sync, accept.
-		{params.L2PChainConfig, 1000000, 1767884630, ID{Hash: checksumToBytes(0xe6abf589), Next: 0}, nil},
+		{params.MainnetChainConfig, 1000000, 1767884630, ID{Hash: checksumToBytes(0xe6abf589), Next: 0}, nil},
 
 		// Local is in Lorentz. Remote announces Pascal but is not aware of further forks. Remote needs a
 		// software update.
-		{params.L2PChainConfig, 1000000, 1767884640, ID{Hash: checksumToBytes(0xc1265f22), Next: 0}, ErrRemoteStale},
+		{params.MainnetChainConfig, 1000000, 1767884640, ID{Hash: checksumToBytes(0xc1265f22), Next: 0}, ErrRemoteStale},
 
 		// Local is in Lorentz, and isn't aware of more forks. Remote announces Lorentz + 0xffffffff.
 		// Local needs a software update, reject.
-		{params.L2PChainConfig, 1000000, 1767884640, ID{Hash: checksumToBytes(checksumUpdate(0xe6abf589, math.MaxUint64)), Next: 0}, ErrLocalIncompatibleOrStale},
+		{params.MainnetChainConfig, 1000000, 1767884640, ID{Hash: checksumToBytes(checksumUpdate(0xe6abf589, math.MaxUint64)), Next: 0}, ErrLocalIncompatibleOrStale},
 
 		// Local is in Lorentz, remote is on a completely different chain.
-		{params.L2PChainConfig, 1000000, 1767884640, ID{Hash: checksumToBytes(0x12345678), Next: 0}, ErrLocalIncompatibleOrStale},
+		{params.MainnetChainConfig, 1000000, 1767884640, ID{Hash: checksumToBytes(0x12345678), Next: 0}, ErrLocalIncompatibleOrStale},
 
 		// Local is in Lorentz, far in the future. Remote announces Gopherium (non existing fork) at some
 		// future timestamp 8888888888, for itself, but past timestamp for local. Local is incompatible.
-		{params.L2PChainConfig, 88888888, 8888888888, ID{Hash: checksumToBytes(0xe6abf589), Next: 8888888888}, ErrLocalIncompatibleOrStale},
+		{params.MainnetChainConfig, 88888888, 8888888888, ID{Hash: checksumToBytes(0xe6abf589), Next: 8888888888}, ErrLocalIncompatibleOrStale},
 
 		// Local is in Pascal. Remote is also in Pascal, but announces Gopherium (non existing fork) at
 		// timestamp 1767884630, before Lorentz. Local is incompatible.
-		{params.L2PChainConfig, 1000000, 1767884630, ID{Hash: checksumToBytes(0xc1265f22), Next: 1767884630}, ErrLocalIncompatibleOrStale},
+		{params.MainnetChainConfig, 1000000, 1767884630, ID{Hash: checksumToBytes(0xc1265f22), Next: 1767884630}, ErrLocalIncompatibleOrStale},
 	}
-	genesis := core.DefaultL2PGenesisBlock().ToBlock()
+	genesis := core.DefaultGenesisBlock().ToBlock()
 	for i, tt := range tests {
 		filter := newFilter(tt.config, genesis, func() (uint64, uint64) { return tt.head, tt.time })
 		if err := filter(tt.id); err != tt.err {

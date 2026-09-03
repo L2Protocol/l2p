@@ -907,7 +907,7 @@ func importHistory(ctx *cli.Context) error {
 	// Determine network.
 	if utils.IsNetworkPreset(ctx) {
 		switch {
-		case ctx.Bool(utils.L2PMainnetFlag.Name):
+		case ctx.Bool(utils.MainnetFlag.Name):
 			network = "mainnet"
 		}
 	} else {

@@ -173,7 +173,7 @@ var (
 		Value:    ethconfig.Defaults.NetworkId,
 		Category: flags.EthCategory,
 	}
-	L2PMainnetFlag = &cli.BoolFlag{
+	MainnetFlag = &cli.BoolFlag{
 		Name:     "mainnet",
 		Usage:    "L2P mainnet",
 		Category: flags.EthCategory,
@@ -1320,7 +1320,7 @@ Please note that --` + MetricsHTTPFlag.Name + ` must be set to start the server.
 var (
 	// NetworkFlags is the flag group of all built-in supported networks.
 	NetworkFlags = []cli.Flag{
-		L2PMainnetFlag,
+		MainnetFlag,
 	}
 
 	// DatabaseFlags is the flag group of all database flags.
@@ -2001,7 +2001,7 @@ func setRequiredBlocks(ctx *cli.Context, cfg *ethconfig.Config) {
 // SetEthConfig applies eth-related command line flags to the config.
 func SetEthConfig(ctx *cli.Context, stack *node.Node, cfg *ethconfig.Config) {
 	// Avoid conflicting network flags, don't allow network id override on preset networks
-	flags.CheckExclusive(ctx, L2PMainnetFlag, DeveloperFlag, NetworkIdFlag)
+	flags.CheckExclusive(ctx, MainnetFlag, DeveloperFlag, NetworkIdFlag)
 	flags.CheckExclusive(ctx, DeveloperFlag, ExternalSignerFlag) // Can't use both ephemeral unlocked and external signer
 
 	// Set configurations from CLI flags
@@ -2232,12 +2232,12 @@ func SetEthConfig(ctx *cli.Context, stack *node.Node, cfg *ethconfig.Config) {
 	}
 	// Override any default configs for hard coded networks.
 	switch {
-	case ctx.Bool(L2PMainnetFlag.Name):
+	case ctx.Bool(MainnetFlag.Name):
 		if !ctx.IsSet(NetworkIdFlag.Name) {
 			cfg.NetworkId = 12216
 		}
-		cfg.Genesis = core.DefaultL2PGenesisBlock()
-		SetDNSDiscoveryDefaults(cfg, params.L2PGenesisHash)
+		cfg.Genesis = core.DefaultGenesisBlock()
+		SetDNSDiscoveryDefaults(cfg, params.MainnetGenesisHash)
 	case ctx.Bool(DeveloperFlag.Name):
 		cfg.NetworkId = 1337
 		cfg.SyncMode = ethconfig.FullSync
@@ -2328,7 +2328,7 @@ func SetEthConfig(ctx *cli.Context, stack *node.Node, cfg *ethconfig.Config) {
 		}
 	default:
 		if cfg.NetworkId == 12216 {
-			SetDNSDiscoveryDefaults(cfg, params.L2PGenesisHash)
+			SetDNSDiscoveryDefaults(cfg, params.MainnetGenesisHash)
 		}
 	}
 	// Set any dangling config values
@@ -2746,8 +2746,8 @@ func DialRPCWithHeaders(endpoint string, headers []string) (*rpc.Client, error) 
 func MakeGenesis(ctx *cli.Context) *core.Genesis {
 	var genesis *core.Genesis
 	switch {
-	case ctx.Bool(L2PMainnetFlag.Name):
-		genesis = core.DefaultL2PGenesisBlock()
+	case ctx.Bool(MainnetFlag.Name):
+		genesis = core.DefaultGenesisBlock()
 	case ctx.Bool(DeveloperFlag.Name):
 		Fatalf("Developer chains are ephemeral")
 	}

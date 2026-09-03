@@ -183,6 +183,6 @@ func TestHistoryImportAndExport(t *testing.T) {
 // chain ID so that exported era files are named after a known network.
 func testChainConfig() *params.ChainConfig {
 	config := *params.TestChainConfig
-	config.ChainID = params.L2PChainConfig.ChainID
+	config.ChainID = params.MainnetChainConfig.ChainID
 	return &config
 }

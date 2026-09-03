@@ -102,7 +102,7 @@ func upgradeBuildInSystemContract(config *params.ChainConfig, blockNumber *big.I
 	var network string
 	switch GenesisHash {
 	/* Add mainnet genesis hash */
-	case params.L2PGenesisHash:
+	case params.MainnetGenesisHash:
 		network = mainNet
 	default:
 		network = defaultNet

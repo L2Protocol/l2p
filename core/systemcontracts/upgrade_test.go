@@ -11,28 +11,28 @@ import (
 
 func TestUpgradeBuildInSystemContractNilInterface(t *testing.T) {
 	var (
-		config               = params.L2PChainConfig
+		config               = params.MainnetChainConfig
 		blockNumber          = big.NewInt(37959559)
 		lastBlockTime uint64 = 1713419337
 		blockTime     uint64 = 1713419340
 		statedb       vm.StateDB
 	)
 
-	GenesisHash = params.L2PGenesisHash
+	GenesisHash = params.MainnetGenesisHash
 
 	upgradeBuildInSystemContract(config, blockNumber, lastBlockTime, blockTime, statedb)
 }
 
 func TestUpgradeBuildInSystemContractNilValue(t *testing.T) {
 	var (
-		config                   = params.L2PChainConfig
+		config                   = params.MainnetChainConfig
 		blockNumber              = big.NewInt(37959559)
 		lastBlockTime uint64     = 1713419337
 		blockTime     uint64     = 1713419340
 		statedb       vm.StateDB = (*state.StateDB)(nil)
 	)
 
-	GenesisHash = params.L2PGenesisHash
+	GenesisHash = params.MainnetGenesisHash
 
 	upgradeBuildInSystemContract(config, blockNumber, lastBlockTime, blockTime, statedb)
 }

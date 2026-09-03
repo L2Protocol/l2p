@@ -37,14 +37,14 @@ type epochCheckpoint struct {
 	FirstIndex  uint64 // first log value index of the given block
 }
 
-//go:embed checkpoints_l2p_mainnet.json
-var checkpointsL2PMainnetJSON []byte
+//go:embed checkpoints_mainnet.json
+var checkpointsMainnetJSON []byte
 
 // checkpoints lists sets of checkpoints for multiple chains. The matching
 // checkpoint set is autodetected by the indexer once the canonical chain is
 // known.
 var checkpoints = []checkpointList{
-	decodeCheckpoints(checkpointsL2PMainnetJSON),
+	decodeCheckpoints(checkpointsMainnetJSON),
 }
 
 func decodeCheckpoints(encoded []byte) (result checkpointList) {

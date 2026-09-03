@@ -44,7 +44,7 @@ const dnsPrefix = "enrtree://AP6MZV3RNCCTYM3EEM5YRAMWT4L53A4H4YTHGDH4HD2O3AOR4N6
 func KnownDNSNetwork(genesis common.Hash, protocol string) string {
 	var net string
 	switch genesis {
-	case L2PGenesisHash:
+	case MainnetGenesisHash:
 		net = "mainnet"
 	default:
 		return ""

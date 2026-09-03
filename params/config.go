@@ -28,7 +28,7 @@ import (
 
 // Genesis hashes to enforce below configs on.
 var (
-	L2PGenesisHash = common.HexToHash("0xcd210a5a8a8af1c3c6fde20e41cc5c4199f727dcbd21a95ae470d048fa59ff17")
+	MainnetGenesisHash = common.HexToHash("0xcd210a5a8a8af1c3c6fde20e41cc5c4199f727dcbd21a95ae470d048fa59ff17")
 )
 
 func newUint64(val uint64) *uint64 { return &val }
@@ -42,7 +42,7 @@ var (
 		ChainID: big.NewInt(11155111),
 	}
 
-	L2PChainConfig = &ChainConfig{
+	MainnetChainConfig = &ChainConfig{
 		ChainID:             big.NewInt(12216),
 		HomesteadBlock:      big.NewInt(0),
 		EIP150Block:         big.NewInt(0),
@@ -85,7 +85,7 @@ var (
 		Parlia: &ParliaConfig{},
 		BlobScheduleConfig: &BlobScheduleConfig{
 			Cancun: DefaultCancunBlobConfig,
-			Prague: DefaultPragueBlobConfigL2P,
+			Prague: DefaultPragueBlobConfigParlia,
 		},
 	}
 
@@ -311,8 +311,8 @@ var (
 
 func GetBuiltInChainConfig(ghash common.Hash) *ChainConfig {
 	switch ghash {
-	case L2PGenesisHash:
-		return L2PChainConfig
+	case MainnetGenesisHash:
+		return MainnetChainConfig
 	default:
 		return nil
 	}
@@ -344,12 +344,12 @@ var (
 		Osaka:  DefaultOsakaBlobConfig,
 	}
 
-	DefaultPragueBlobConfigL2P = DefaultCancunBlobConfig
+	DefaultPragueBlobConfigParlia = DefaultCancunBlobConfig
 )
 
 // NetworkNames are user friendly names to use in the chain spec banner.
 var NetworkNames = map[string]string{
-	L2PChainConfig.ChainID.String(): "l2p",
+	MainnetChainConfig.ChainID.String(): "l2p",
 }
 
 // ChainConfig is the core config which determines the blockchain settings.

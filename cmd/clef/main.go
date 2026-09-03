@@ -99,7 +99,7 @@ var (
 	}
 	chainIdFlag = &cli.Int64Flag{
 		Name:  "chainid",
-		Value: params.L2PChainConfig.ChainID.Int64(),
+		Value: params.MainnetChainConfig.ChainID.Int64(),
 		Usage: "Chain id to use for signing (12216=L2P mainnet)",
 	}
 	rpcPortFlag = &cli.IntFlag{

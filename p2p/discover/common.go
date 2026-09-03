@@ -52,7 +52,7 @@ func ParseEthFilter(chain string) (NodeFilterFunc, error) {
 	var filter forkid.Filter
 	switch chain {
 	case "l2p":
-		filter = forkid.NewStaticFilter(params.L2PChainConfig, core.DefaultL2PGenesisBlock().ToBlock())
+		filter = forkid.NewStaticFilter(params.MainnetChainConfig, core.DefaultGenesisBlock().ToBlock())
 	default:
 		return nil, fmt.Errorf("unknown network %q", chain)
 	}
@@ -77,7 +77,7 @@ func GetEthEntry(chain string) (enr.Entry, error) {
 	}
 	switch chain {
 	case "l2p":
-		eth.ForkID = forkid.NewID(params.L2PChainConfig, core.DefaultL2PGenesisBlock().ToBlock(), uint64(0), uint64(0))
+		eth.ForkID = forkid.NewID(params.MainnetChainConfig, core.DefaultGenesisBlock().ToBlock(), uint64(0), uint64(0))
 	default:
 		return nil, fmt.Errorf("unknown network %q", chain)
 	}
