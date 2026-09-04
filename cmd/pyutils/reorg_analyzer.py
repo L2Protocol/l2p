@@ -1,9 +1,9 @@
 # Example commands: (You can either given path to the directory which has all the .log files or just one .log file name)
 # python reorg_analyzer.py /path/to/logs_directory 
 # or
-# python reorg_analyzer.py bsc.log
+# python reorg_analyzer.py l2p.log
 # or 
-# python reorg_analyzer.py bsc.log.2024-10-3*
+# python reorg_analyzer.py l2p.log.2024-10-3*
 import re
 import os
 import argparse

@@ -16,7 +16,7 @@ FROM ethereum/solc:0.6.4-alpine as l2p-genesis
 
 RUN apk add --no-cache ca-certificates npm nodejs bash alpine-sdk expect
 
-RUN git clone https://github.com/bnb-chain/bsc-genesis-contract.git /root/genesis \
+RUN git clone https://github.com/L2Protocol/l2p-genesis-contract.git /root/genesis \
     && cd /root/genesis && npm install
 #RUN curl -L https://foundry.paradigm.xyz | bash
 

@@ -106,18 +106,6 @@ bae604ec43f366574cbbf126f0fd2edc270cdb5183f64a27680c78b0892d4935  golangci-lint-
 15cad8e2347d91b259095c29c589b53baaf051893a7b4b44861cad09a3069e2e  golangci-lint-2.13.2-windows-386.zip
 4735fdc8e84a0cfb7a15a1c364a650942f88215e0d36c674ebc4024f7b554524  golangci-lint-2.13.2-windows-amd64.zip
 2dbffbd1225d41ac5740f0b478a43b6517f3e3f702fe0ab3aec470bd6ec8e263  golangci-lint-2.13.2-windows-arm64.zip
-# version:ppa-builder-1.19 1.19.6
-# https://go.dev/dl/
-d7f0013f82e6d7f862cc6cb5c8cdb48eef5f2e239b35baa97e2f1a7466043767  go1.19.6.src.tar.gz
-
-# version:ppa-builder-1.21 1.21.9
-# https://go.dev/dl/
-58f0c5ced45a0012bce2ff7a9df03e128abcc8818ebabe5027bb92bafe20e421  go1.21.9.src.tar.gz
-
-# version:ppa-builder-1.23 1.23.6
-# https://go.dev/dl/
-039c5b04e65279daceee8a6f71e70bd05cf5b801782b6f77c6e19e2ed0511222  go1.23.6.src.tar.gz
-
 # version:protoc 27.1
 # https://github.com/protocolbuffers/protobuf/releases/
 # https://github.com/protocolbuffers/protobuf/releases/download/v27.1/

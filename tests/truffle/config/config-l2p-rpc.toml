@@ -44,7 +44,7 @@ MaxPeers = 30
 NoDiscovery = false
 BootstrapNodes = []
 StaticNodes = []
-ListenAddr = ":30311"
+ListenAddr = ":31398"
 EnableMsgEvents = false
 
 [Node.HTTPTimeouts]
@@ -53,7 +53,7 @@ WriteTimeout = 30000000000
 IdleTimeout = 120000000000
 
 [Node.LogConfig]
-FilePath = "bsc.log"
+FilePath = "l2p.log"
 MaxBytesSize = 10485760
 Level = "info"
 FileRoot = ""
