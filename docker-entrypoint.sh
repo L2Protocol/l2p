@@ -1,15 +1,12 @@
 #!/bin/bash
 set -e
 
-BSC_CONFIG=${BSC_HOME}/config/config.toml
-BSC_GENESIS=${BSC_HOME}/config/genesis.json
+L2P_CONFIG=${L2P_HOME}/config/config.toml
+L2P_GENESIS=${L2P_HOME}/config/genesis.json
 
-# Init genesis state if geth not exist
-DATA_DIR=$(cat ${BSC_CONFIG} | grep -A1 '\[Node\]' | grep -oP '\"\K.*?(?=\")')
-
-GETH_DIR=${DATA_DIR}/geth
-if [ ! -d "$GETH_DIR" ]; then
-  geth --datadir ${DATA_DIR} init ${BSC_GENESIS}
+# Init genesis state if the chain database does not exist yet
+if [ ! -d "${DATA_DIR}/geth" ]; then
+  geth --datadir "${DATA_DIR}" init "${L2P_GENESIS}"
 fi
 
-exec "geth" "--config" ${BSC_CONFIG} "$@"
+exec geth --config "${L2P_CONFIG}" --datadir "${DATA_DIR}" "$@"

@@ -38,13 +38,13 @@ test: all
 
 #? truffle-test: Run the integration test.
 truffle-test:
-	rm -rf ./tests/truffle/storage/bsc-validator1
-	rm -rf ./tests/truffle/storage/bsc-rpc
-	docker build . -f ./docker/Dockerfile --target bsc -t bsc
-	docker build . -f ./docker/Dockerfile --target bsc-genesis -t bsc-genesis
+	rm -rf ./tests/truffle/storage/l2p-validator1
+	rm -rf ./tests/truffle/storage/l2p-rpc
+	docker build . -f ./docker/Dockerfile --target l2p -t l2p
+	docker build . -f ./docker/Dockerfile --target l2p-genesis -t l2p-genesis
 	docker build . -f ./docker/Dockerfile.truffle -t truffle-test
 	docker compose -f ./tests/truffle/docker-compose.yml up genesis
-	docker compose -f ./tests/truffle/docker-compose.yml up -d bsc-rpc bsc-validator1
+	docker compose -f ./tests/truffle/docker-compose.yml up -d l2p-rpc l2p-validator1
 	sleep 60
 	docker compose -f ./tests/truffle/docker-compose.yml up --exit-code-from truffle-test truffle-test
 	docker compose -f ./tests/truffle/docker-compose.yml down
@@ -76,7 +76,7 @@ devtools:
 
 #? help: Build docker image
 docker:
-	docker build --pull -t bnb-chain/bsc:latest -f Dockerfile .
+	docker build --pull -t l2p:latest -f Dockerfile .
 
 #? help: Get more info on make commands.
 help: Makefile

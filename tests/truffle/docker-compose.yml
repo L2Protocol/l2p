@@ -1,6 +1,6 @@
 services:
   genesis:
-    image: bsc-genesis
+    image: l2p-genesis
     env_file: .env
     environment:
       NUMS_OF_VALIDATOR: 1
@@ -11,8 +11,8 @@ services:
       - ./init-holders:/root/init-holders
     command: /root/scripts/bootstrap.sh
   
-  bsc-rpc:
-    image: bsc
+  l2p-rpc:
+    image: l2p
     healthcheck:
       test: nc -z localhost 8545
       interval: 3s
@@ -20,26 +20,26 @@ services:
       retries: 15
     env_file: .env
     environment:
-      NODE_ID: bsc-rpc
+      NODE_ID: l2p-rpc
     volumes:
-      - ./storage/bsc-rpc:/root/.ethereum
+      - ./storage/l2p-rpc:/root/.ethereum
       - ./scripts:/scripts
       - ./config:/config
-    entrypoint: [ "sh", "-c", "/scripts/bsc-rpc.sh" ]
+    entrypoint: [ "sh", "-c", "/scripts/l2p-rpc.sh" ]
     networks:
       default:
         ipv4_address: 99.1.0.3
 
-  bsc-validator1:
-    image: bsc
+  l2p-validator1:
+    image: l2p
     env_file: .env
     environment:
-      NODE_ID: bsc-validator1
-      BOOTSTRAP_HOST: bsc-rpc
+      NODE_ID: l2p-validator1
+      BOOTSTRAP_HOST: l2p-rpc
     volumes:
-      - ./storage/bsc-validator1:/root/.ethereum
+      - ./storage/l2p-validator1:/root/.ethereum
       - ./scripts:/scripts
-    entrypoint: [ "sh", "-c", "/scripts/bsc-validator.sh" ]
+    entrypoint: [ "sh", "-c", "/scripts/l2p-validator.sh" ]
     networks:
       default:
         ipv4_address: 99.1.0.2
@@ -49,12 +49,12 @@ services:
     command: /scripts/truffle-test.sh
     env_file: .env
     environment:
-      RPC_HOST: bsc-rpc
+      RPC_HOST: l2p-rpc
       RPC_PORT: 8545
     volumes:
       - ./scripts:/scripts
     depends_on:
-      bsc-rpc:
+      l2p-rpc:
         condition: service_healthy
 
 networks:
