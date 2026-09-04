@@ -3250,7 +3250,6 @@ func preShanghaiConfig() *params.ChainConfig {
 	config.ShanghaiTime = nil
 	config.KeplerTime = nil
 	config.FeynmanTime = nil
-	config.FeynmanFixTime = nil
 	config.CancunTime = nil
 	return &config
 }

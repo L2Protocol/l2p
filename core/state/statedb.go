@@ -92,10 +92,6 @@ type StateDB struct {
 	originalRoot common.Hash
 	expectedRoot common.Hash // The state root in the block header
 
-	// if needBadSharedStorage = true, try read from sharedPool firstly, compatible with old erroneous data(https://forum.bnbchain.org/t/about-the-hertzfix/2400).
-	// else read from sharedPool which is not in stateObjectsDestruct.
-	needBadSharedStorage bool
-
 	// This map holds 'live' objects, which will get modified while
 	// processing a state transition.
 	stateObjects map[common.Address]*stateObject
@@ -207,10 +203,6 @@ func (s *StateDB) InitBlockAccessList() {
 		log.Warn("prepareBAL blockAccessList is not nil")
 	}
 	s.blockAccessList = &types.BlockAccessListRecord{Accounts: make(map[common.Address]types.AccountAccessListRecord)}
-}
-
-func (s *StateDB) SetNeedBadSharedStorage(needBadSharedStorage bool) {
-	s.needBadSharedStorage = needBadSharedStorage
 }
 
 // In mining mode, we will try multi-fillTransactions to get the most profitable one.
@@ -819,7 +811,6 @@ func (s *StateDB) copyInternal(doPrefetch bool) *StateDB {
 		stateObjectsDestruct: make(map[common.Address]*stateObject, len(s.stateObjectsDestruct)),
 		mutations:            make(map[common.Address]*mutation, len(s.mutations)),
 		dbErr:                s.dbErr,
-		needBadSharedStorage: s.needBadSharedStorage,
 		refund:               s.refund,
 		thash:                s.thash,
 		txIndex:              s.txIndex,

@@ -279,12 +279,9 @@ func (o *ChainOverrides) apply(cfg *params.ChainConfig) error {
 		cfg.ShanghaiTime = o.OverridePassedForkTime
 		cfg.KeplerTime = o.OverridePassedForkTime
 		cfg.FeynmanTime = o.OverridePassedForkTime
-		cfg.FeynmanFixTime = o.OverridePassedForkTime
 		cfg.CancunTime = o.OverridePassedForkTime
 		cfg.HaberTime = o.OverridePassedForkTime
-		cfg.HaberFixTime = o.OverridePassedForkTime
 		cfg.BohrTime = o.OverridePassedForkTime
-		cfg.PascalTime = o.OverridePassedForkTime
 		cfg.PragueTime = o.OverridePassedForkTime
 	}
 	if o.OverrideLorentz != nil {

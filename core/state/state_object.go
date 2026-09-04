@@ -184,16 +184,6 @@ func (s *stateObject) GetCommittedState(key common.Hash) common.Hash {
 		return value
 	}
 
-	if s.db.needBadSharedStorage {
-		// keep compatible with old erroneous data(https://forum.bnbchain.org/t/about-the-hertzfix/2400).
-		if readerWithCacheStats, ok := s.db.reader.(*readerWithCacheStats); ok {
-			if value, cached, err := readerWithCacheStats.readerWithCache.storage(s.address, key); err == nil && cached {
-				s.originStorage[key] = value
-				return value
-			}
-		}
-	}
-
 	// If the object was destructed in *this* block (and potentially resurrected),
 	// the storage has been cleared out, and we should *not* consult the previous
 	// database about any storage values. The only possible alternatives are:

@@ -1103,17 +1103,10 @@ func (p *BlobPool) SetGasTip(tip *big.Int) {
 // This check is meant as an early check which only needs to be performed once,
 // and does not require the pool mutex to be held.
 func (p *BlobPool) ValidateTxBasics(tx *types.Transaction) error {
-	sender, err := types.Sender(p.signer, tx)
+	_, err := types.Sender(p.signer, tx)
 	if err != nil {
 		return err
 	}
-	for _, blackAddr := range types.NanoBlackList {
-		if sender == blackAddr || (tx.To() != nil && *tx.To() == blackAddr) {
-			log.Error("blacklist account detected", "account", blackAddr, "tx", tx.Hash())
-			return txpool.ErrInBlackList
-		}
-	}
-
 	opts := &txpool.ValidationOptions{
 		Config:       p.chain.Config(),
 		Accept:       1 << types.BlobTxType,

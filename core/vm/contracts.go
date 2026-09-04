@@ -93,30 +93,6 @@ var PrecompiledContractsIstanbul = PrecompiledContracts{
 	common.BytesToAddress([]byte{0x9}): &blake2F{},
 }
 
-var PrecompiledContractsNano = PrecompiledContracts{
-	common.BytesToAddress([]byte{0x1}): &ecrecover{},
-	common.BytesToAddress([]byte{0x2}): &sha256hash{},
-	common.BytesToAddress([]byte{0x3}): &ripemd160hash{},
-	common.BytesToAddress([]byte{0x4}): &dataCopy{},
-	common.BytesToAddress([]byte{0x5}): &bigModExp{eip2565: false, eip7823: false, eip7883: false},
-	common.BytesToAddress([]byte{0x6}): &bn256AddIstanbul{},
-	common.BytesToAddress([]byte{0x7}): &bn256ScalarMulIstanbul{},
-	common.BytesToAddress([]byte{0x8}): &bn256PairingIstanbul{},
-	common.BytesToAddress([]byte{0x9}): &blake2F{},
-}
-
-var PrecompiledContractsMoran = PrecompiledContracts{
-	common.BytesToAddress([]byte{0x1}): &ecrecover{},
-	common.BytesToAddress([]byte{0x2}): &sha256hash{},
-	common.BytesToAddress([]byte{0x3}): &ripemd160hash{},
-	common.BytesToAddress([]byte{0x4}): &dataCopy{},
-	common.BytesToAddress([]byte{0x5}): &bigModExp{eip2565: false, eip7823: false, eip7883: false},
-	common.BytesToAddress([]byte{0x6}): &bn256AddIstanbul{},
-	common.BytesToAddress([]byte{0x7}): &bn256ScalarMulIstanbul{},
-	common.BytesToAddress([]byte{0x8}): &bn256PairingIstanbul{},
-	common.BytesToAddress([]byte{0x9}): &blake2F{},
-}
-
 var PrecompiledContractsPlanck = PrecompiledContracts{
 	common.BytesToAddress([]byte{0x1}): &ecrecover{},
 	common.BytesToAddress([]byte{0x2}): &sha256hash{},
@@ -310,8 +286,6 @@ var (
 	PrecompiledAddressesPlato     []common.Address
 	PrecompiledAddressesLuban     []common.Address
 	PrecompiledAddressesPlanck    []common.Address
-	PrecompiledAddressesMoran     []common.Address
-	PrecompiledAddressesNano      []common.Address
 	PrecompiledAddressesIstanbul  []common.Address
 	PrecompiledAddressesByzantium []common.Address
 	PrecompiledAddressesHomestead []common.Address
@@ -326,12 +300,6 @@ func init() {
 	}
 	for k := range PrecompiledContractsIstanbul {
 		PrecompiledAddressesIstanbul = append(PrecompiledAddressesIstanbul, k)
-	}
-	for k := range PrecompiledContractsNano {
-		PrecompiledAddressesNano = append(PrecompiledAddressesNano, k)
-	}
-	for k := range PrecompiledContractsMoran {
-		PrecompiledAddressesMoran = append(PrecompiledAddressesMoran, k)
 	}
 	for k := range PrecompiledContractsPlanck {
 		PrecompiledAddressesPlanck = append(PrecompiledAddressesPlanck, k)
@@ -389,10 +357,6 @@ func activePrecompiledContracts(rules params.Rules) PrecompiledContracts {
 		return PrecompiledContractsLuban
 	case rules.IsPlanck:
 		return PrecompiledContractsPlanck
-	case rules.IsMoran:
-		return PrecompiledContractsMoran
-	case rules.IsNano:
-		return PrecompiledContractsNano
 	case rules.IsIstanbul:
 		return PrecompiledContractsIstanbul
 	case rules.IsByzantium:
@@ -430,10 +394,6 @@ func ActivePrecompiles(rules params.Rules) []common.Address {
 		return PrecompiledAddressesLuban
 	case rules.IsPlanck:
 		return PrecompiledAddressesPlanck
-	case rules.IsMoran:
-		return PrecompiledAddressesMoran
-	case rules.IsNano:
-		return PrecompiledAddressesNano
 	case rules.IsIstanbul:
 		return PrecompiledAddressesIstanbul
 	case rules.IsByzantium:

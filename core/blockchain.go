@@ -2458,8 +2458,7 @@ func (bc *BlockChain) processBlock(parentRoot common.Hash, block *types.Block, s
 	)
 	defer interrupt.Store(true) // terminate the prefetch at the end
 
-	needBadSharedStorage := bc.chainConfig.NeedBadSharedStorage(block.Number())
-	needPrefetch := needBadSharedStorage || (!bc.cfg.NoPrefetch && len(block.Transactions()) >= prefetchTxNumber) || block.BAL() != nil
+	needPrefetch := (!bc.cfg.NoPrefetch && len(block.Transactions()) >= prefetchTxNumber) || block.BAL() != nil
 	if !needPrefetch {
 		statedb, err = state.New(parentRoot, bc.statedb)
 		if err != nil {
@@ -2552,7 +2551,6 @@ func (bc *BlockChain) processBlock(parentRoot common.Hash, block *types.Block, s
 	// Process block using the parent state as reference point
 	pstart := time.Now()
 	statedb.SetExpectedStateRoot(block.Root())
-	statedb.SetNeedBadSharedStorage(needBadSharedStorage)
 	res, err := bc.processor.Process(block, statedb, bc.cfg.VmConfig)
 	if err != nil {
 		bc.reportBlock(block, res, err)
