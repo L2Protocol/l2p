@@ -7,7 +7,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cometbft/cometbft/libs/rand"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/stretchr/testify/assert"
@@ -214,12 +213,12 @@ func TestBiggerTx(t *testing.T) {
 
 // Helper function to create a random test transaction
 func createRandomTestTx() *types.Transaction {
-	nonce := uint64(rand.Intn(1000000))
-	to := common.BytesToAddress(rand.Bytes(20))
-	amount := new(big.Int).Rand(rand2.New(rand2.NewSource(rand.Int63())), big.NewInt(1e18))
+	nonce := uint64(rand2.Intn(1000000))
+	to := common.BytesToAddress(randBytes(20))
+	amount := new(big.Int).Rand(rand2.New(rand2.NewSource(rand2.Int63())), big.NewInt(1e18))
 	gasLimit := uint64(21000)
-	gasPrice := new(big.Int).Rand(rand2.New(rand2.NewSource(rand.Int63())), big.NewInt(1e9))
-	data := rand.Bytes(100)
+	gasPrice := new(big.Int).Rand(rand2.New(rand2.NewSource(rand2.Int63())), big.NewInt(1e9))
+	data := randBytes(100)
 	return types.NewTransaction(nonce, to, amount, gasLimit, gasPrice, data)
 }
 
@@ -340,4 +339,10 @@ func BenchmarkTxOverflowPoolHeapAddFlush(b *testing.B) {
 		}
 		pool.Flush(10)
 	}
+}
+
+func randBytes(n int) []byte {
+	b := make([]byte, n)
+	rand2.Read(b)
+	return b
 }
