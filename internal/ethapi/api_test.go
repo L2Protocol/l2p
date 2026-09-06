@@ -25,7 +25,6 @@ import (
 	"errors"
 	"fmt"
 	"maps"
-	"math"
 	"math/big"
 	"os"
 	"path/filepath"
@@ -2473,7 +2472,7 @@ func TestSimulateV1ChainLinkage(t *testing.T) {
 		state:          stateDB,
 		base:           baseHeader,
 		chainConfig:    backend.ChainConfig(),
-		gp:             new(core.GasPool).AddGas(math.MaxUint64),
+		budget:         newGasBudget(0),
 		traceTransfers: false,
 		validate:       false,
 		fullTx:         false,
@@ -2558,7 +2557,7 @@ func TestSimulateV1TxSender(t *testing.T) {
 		state:          stateDB,
 		base:           baseHeader,
 		chainConfig:    backend.ChainConfig(),
-		gp:             new(core.GasPool).AddGas(math.MaxUint64),
+		budget:         newGasBudget(0),
 		traceTransfers: false,
 		validate:       false,
 		fullTx:         true,
