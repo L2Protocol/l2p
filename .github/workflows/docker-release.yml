@@ -23,6 +23,9 @@ jobs:
       contents: read
       packages: write
     runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
+      packages: write
     steps:
 
       - name: Checkout

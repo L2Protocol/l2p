@@ -24,7 +24,7 @@ const (
 
 	// softResponseLimit is the target maximum size of replies. The hard cap on
 	// the wire is maxMessageSize (10MB); 8MB leaves headroom for outer RLP/p2p
-	// framing. Each entry's measured size includes sidecars and BAL.
+	// framing. Each entry's measured size includes sidecars.
 	softResponseLimit = 8 * 1024 * 1024
 )
 
@@ -96,13 +96,27 @@ type Decoder interface {
 }
 
 var bsc1 = map[uint64]msgHandler{
-	VotesMsg: handleVotes,
+	BscCapMsg: handleBscCap, // ignore capability message for backward compatibility
+	VotesMsg:  handleVotes,
 }
 
 var bsc2 = map[uint64]msgHandler{
+	BscCapMsg:           handleBscCap, // ignore capability message for backward compatibility
 	VotesMsg:            handleVotes,
 	GetBlocksByRangeMsg: handleGetBlocksByRange,
 	BlocksByRangeMsg:    handleBlocksByRange,
+}
+
+// handleBscCap ignores the capability message for backward compatibility.
+// Old nodes send BscCapMsg as part of their handshake, we just ignore it
+// since P2P layer already negotiated the protocol version.
+func handleBscCap(backend Backend, msg Decoder, peer *Peer) error {
+	// Decode the message to consume it, but ignore the content
+	var cap BscCapPacket
+	if err := msg.Decode(&cap); err != nil {
+		return nil // ignore decode errors for backward compatibility
+	}
+	return nil
 }
 
 // handleMessage is invoked whenever an inbound message is received from a

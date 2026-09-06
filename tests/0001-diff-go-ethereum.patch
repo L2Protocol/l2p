@@ -21,7 +21,7 @@ index ff59b3958..86463a585 100644
 -	common.BytesToAddress([]byte{0x66}): &blsSignatureVerify{},
 -	common.BytesToAddress([]byte{0x68}): &verifyDoubleSignEvidence{},
 -
--	common.BytesToAddress([]byte{0x01, 0x00}): &p256Verify{},
+-	common.BytesToAddress([]byte{0x1, 0x00}): &p256Verify{},
  }
  
  var PrecompiledContractsBLS = PrecompiledContractsPrague
