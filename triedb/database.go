@@ -110,6 +110,13 @@ func NewDatabase(diskdb ethdb.Database, config *Config) *Database {
 			config = HashDefaults
 		}
 	}
+	// Take a private copy of the configuration. Callers may hand over a shared
+	// value such as HashDefaults, and both the sanitization below and the
+	// genesis state flush would otherwise mutate it for every other database
+	// holding the same pointer.
+	cpy := *config
+	config = &cpy
+
 	if config.PathDB == nil && config.HashDB == nil {
 		if dbScheme == rawdb.PathScheme {
 			config.PathDB = pathdb.Defaults
@@ -157,6 +164,22 @@ func NewDatabase(diskdb ethdb.Database, config *Config) *Database {
 
 func (db *Database) Config() *Config {
 	return db.config
+}
+
+// WithTries returns a view of the database with the NoTries flag cleared, for
+// callers which must persist trie nodes even when the node is configured to run
+// without them. The returned database shares the disk, preimage store and
+// backend with the original.
+func (db *Database) WithTries() *Database {
+	if db.config == nil || !db.config.NoTries {
+		return db
+	}
+	config := *db.config
+	config.NoTries = false
+
+	cpy := *db
+	cpy.config = &config
+	return &cpy
 }
 
 // NodeReader returns a reader for accessing trie nodes within the specified state.
