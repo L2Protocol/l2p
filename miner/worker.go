@@ -716,6 +716,7 @@ func (w *worker) commitBlobTransaction(env *environment, tx *types.Transaction, 
 	env.receipts = append(env.receipts, receipt)
 	env.sidecars = append(env.sidecars, sc)
 	env.blobs += len(sc.Blobs)
+	env.tcount++
 	*env.header.BlobGasUsed += receipt.BlobGasUsed
 	return receipt.Logs, nil
 }

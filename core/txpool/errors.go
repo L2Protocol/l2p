@@ -74,4 +74,7 @@ var (
 
 	// ErrInBlackList is returned if the transaction send by banned address
 	ErrInBlackList = errors.New("sender or to in black list")
+
+	// ErrKZGVerificationError is returned when a KZG proof was not verified correctly.
+	ErrKZGVerificationError = errors.New("KZG verification error")
 )
