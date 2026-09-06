@@ -71,11 +71,13 @@ var (
 		LorentzTime:         newUint64(1767884640),
 		MaxwellTime:         nil,
 		FermiTime:           nil,
+		OsakaTime:           newUint64(1767884650),
 
 		Parlia: &ParliaConfig{},
 		BlobScheduleConfig: &BlobScheduleConfig{
 			Cancun: DefaultCancunBlobConfig,
 			Prague: DefaultPragueBlobConfigParlia,
+			Osaka:  DefaultOsakaBlobConfigBSC,
 		},
 	}
 
@@ -1124,9 +1126,9 @@ func (c *ChainConfig) CheckConfigForkOrder() error {
 		{name: "bohrTime", timestamp: c.BohrTime},
 		{name: "pragueTime", timestamp: c.PragueTime},
 		{name: "lorentzTime", timestamp: c.LorentzTime},
+		{name: "osakaTime", timestamp: c.OsakaTime},
 		{name: "maxwellTime", timestamp: c.MaxwellTime},
 		{name: "fermiTime", timestamp: c.FermiTime},
-		{name: "osakaTime", timestamp: c.OsakaTime},
 		{name: "mendelTime", timestamp: c.MendelTime},
 		{name: "pasteurTime", timestamp: c.PasteurTime},
 		{name: "verkleTime", timestamp: c.VerkleTime, optional: true},

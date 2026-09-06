@@ -60,8 +60,9 @@ func TestCreation(t *testing.T) {
 				{100, 1767884600, ID{Hash: checksumToBytes(0xda2734b0), Next: 1767884620}}, // First Cancun and Haber block
 				{100, 1767884620, ID{Hash: checksumToBytes(0xec0b47cf), Next: 1767884630}}, // First Bohr block
 				{100, 1767884630, ID{Hash: checksumToBytes(0xe7967f54), Next: 1767884640}}, // First Prague block
-				{100, 1767884640, ID{Hash: checksumToBytes(0x17629dd3), Next: 0}},          // First Lorentz block
-				{1000000, 2000000000, ID{Hash: checksumToBytes(0x17629dd3), Next: 0}},      // Future Lorentz block
+				{100, 1767884640, ID{Hash: checksumToBytes(0x17629dd3), Next: 1767884650}}, // First Lorentz block
+				{100, 1767884650, ID{Hash: checksumToBytes(0xfc414462), Next: 0}},          // First Osaka block
+				{1000000, 2000000000, ID{Hash: checksumToBytes(0xfc414462), Next: 0}},      // Future Osaka block
 			},
 		},
 	}
@@ -88,6 +89,7 @@ func TestValidation(t *testing.T) {
 	blockConfig.BohrTime = nil
 	blockConfig.PragueTime = nil
 	blockConfig.LorentzTime = nil
+	blockConfig.OsakaTime = nil
 
 	tests := []struct {
 		config *params.ChainConfig
@@ -239,9 +241,9 @@ func TestValidation(t *testing.T) {
 		// Local is in Lorentz, remote is on a completely different chain.
 		{params.MainnetChainConfig, 1000000, 1767884640, ID{Hash: checksumToBytes(0x12345678), Next: 0}, ErrLocalIncompatibleOrStale},
 
-		// Local is in Lorentz, far in the future. Remote announces Gopherium (non existing fork) at some
+		// Local is in Osaka, far in the future. Remote announces Gopherium (non existing fork) at some
 		// future timestamp 8888888888, for itself, but past timestamp for local. Local is incompatible.
-		{params.MainnetChainConfig, 88888888, 8888888888, ID{Hash: checksumToBytes(0x17629dd3), Next: 8888888888}, ErrLocalIncompatibleOrStale},
+		{params.MainnetChainConfig, 88888888, 8888888888, ID{Hash: checksumToBytes(0xfc414462), Next: 8888888888}, ErrLocalIncompatibleOrStale},
 
 		// Local is in Prague. Remote is also in Prague, but announces Gopherium (non existing fork) at
 		// timestamp 1767884630, before Lorentz. Local is incompatible.
