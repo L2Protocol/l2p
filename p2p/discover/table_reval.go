@@ -94,17 +94,14 @@ func (tr *tableRevalidation) run(tab *Table, now mclock.AbsTime) (nextTime mcloc
 }
 
 // startRequest spawns a revalidation request for node n.
+// The caller must hold tab.mutex.
 func (tr *tableRevalidation) startRequest(tab *Table, n *tableNode) {
 	if _, ok := tr.activeReq[n.ID()]; ok {
 		panic(fmt.Errorf("duplicate startRequest (node %v)", n.ID()))
 	}
 	tr.activeReq[n.ID()] = struct{}{}
 	resp := revalidationResponse{n: n}
-
-	// Fetch the node while holding lock.
-	tab.mutex.Lock()
 	node := n.Node
-	tab.mutex.Unlock()
 
 	go tab.doRevalidate(resp, node)
 }
@@ -132,9 +129,23 @@ func (tab *Table) doRevalidate(resp revalidationResponse, node *enode.Node) {
 
 // handleResponse processes the result of a revalidation request.
 func (tr *tableRevalidation) handleResponse(tab *Table, resp revalidationResponse) {
+	n := resp.n
+
+	// Store potential seeds in database.
+	// This is done via defer to avoid holding Table lock while writing to DB.
+	// It is registered before the lock so that it runs after the unlock.
+	defer func() {
+		if n.isValidatedLive && n.livenessChecks > 5 {
+			tab.db.UpdateNode(resp.n.Node)
+		}
+	}()
+
+	// The revalidation state and Table internals are both guarded by tab.mutex.
+	tab.mutex.Lock()
+	defer tab.mutex.Unlock()
+
 	var (
 		now = tab.cfg.Clock.Now()
-		n   = resp.n
 		b   = tab.bucket(n.ID())
 	)
 	delete(tr.activeReq, n.ID())
@@ -144,18 +155,6 @@ func (tr *tableRevalidation) handleResponse(tab *Table, resp revalidationRespons
 	if n.revalList == nil {
 		return
 	}
-
-	// Store potential seeds in database.
-	// This is done via defer to avoid holding Table lock while writing to DB.
-	defer func() {
-		if n.isValidatedLive && n.livenessChecks > 5 {
-			tab.db.UpdateNode(resp.n.Node)
-		}
-	}()
-
-	// Remaining logic needs access to Table internals.
-	tab.mutex.Lock()
-	defer tab.mutex.Unlock()
 
 	if !resp.didRespond {
 		n.livenessChecks /= 3

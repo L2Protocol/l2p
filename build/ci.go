@@ -31,7 +31,7 @@ Available commands are:
 	install    [ -arch architecture ] [ -cc compiler ] [ packages... ] -- builds packages and executables
 	test       [ -coverage ] [ packages... ]                           -- runs the tests
 
-	archive    [ -arch architecture ] [ -type zip|tar ] [ -signer key-envvar ] [ -signify key-envvar ] [ -upload dest ] -- archives build artifacts
+	archive    [ -arch architecture ] [ -type zip|tar ] [ -signify key-envvar ] [ -upload dest ] -- archives build artifacts
 
 For all commands, -n prevents execution of external programs (dry run mode).
 */
@@ -508,7 +508,6 @@ func doArchive(cmdline []string) {
 	var (
 		arch    = flag.String("arch", runtime.GOARCH, "Architecture cross packaging")
 		atype   = flag.String("type", "zip", "Type of archive to write (zip|tar)")
-		signer  = flag.String("signer", "", `Environment variable holding the signing key (e.g. LINUX_SIGNING_KEY)`)
 		signify = flag.String("signify", "", `Environment variable holding the signify key (e.g. LINUX_SIGNIFY_KEY)`)
 		upload  = flag.String("upload", "", `Destination to upload the archives (usually "gethstore/builds")`)
 		ext     string
@@ -537,7 +536,7 @@ func doArchive(cmdline []string) {
 		log.Fatal(err)
 	}
 	for _, archive := range []string{geth, alltools} {
-		if err := archiveUpload(archive, *upload, *signer, *signify); err != nil {
+		if err := archiveUpload(archive, *upload, *signify); err != nil {
 			log.Fatal(err)
 		}
 	}
@@ -557,14 +556,8 @@ func archiveBasename(arch string, archiveVersion string) string {
 	return platform + "-" + archiveVersion
 }
 
-func archiveUpload(archive string, blobstore string, signer string, signifyVar string) error {
+func archiveUpload(archive string, blobstore string, signifyVar string) error {
 	// If signing was requested, generate the signature files
-	if signer != "" {
-		key := getenvBase64(signer)
-		if err := build.PGPSignFile(archive, archive+".asc", string(key)); err != nil {
-			return err
-		}
-	}
 	if signifyVar != "" {
 		key := os.Getenv(signifyVar)
 		untrustedComment := "verify with geth-release.pub"
@@ -582,11 +575,6 @@ func archiveUpload(archive string, blobstore string, signer string, signifyVar s
 		}
 		if err := build.AzureBlobstoreUpload(archive, filepath.Base(archive), auth); err != nil {
 			return err
-		}
-		if signer != "" {
-			if err := build.AzureBlobstoreUpload(archive+".asc", filepath.Base(archive+".asc"), auth); err != nil {
-				return err
-			}
 		}
 		if signifyVar != "" {
 			if err := build.AzureBlobstoreUpload(archive+".sig", filepath.Base(archive+".sig"), auth); err != nil {

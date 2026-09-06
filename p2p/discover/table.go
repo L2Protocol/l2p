@@ -386,7 +386,9 @@ func (tab *Table) loop() {
 	})
 loop:
 	for {
+		tab.mutex.Lock()
 		nextTime := tab.revalidation.run(tab, tab.cfg.Clock.Now())
+		tab.mutex.Unlock()
 		revalTimer.Schedule(nextTime)
 
 		select {
