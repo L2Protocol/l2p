@@ -14,7 +14,8 @@ import (
 // txHeapItem implements the Interface interface (https://pkg.go.dev/container/heap#Interface) of heap so that it can be heapified
 type txHeapItem struct {
 	tx        *types.Transaction
-	timestamp int64 // Unix timestamp (nanoseconds) of when the transaction was added
+	timestamp int64  // Unix timestamp (nanoseconds) of when the transaction was added
+	sequence  uint64 // Insertion counter, breaks ties between equal timestamps
 	index     int
 }
 
@@ -22,7 +23,10 @@ type txHeap []*txHeapItem
 
 func (h txHeap) Len() int { return len(h) }
 func (h txHeap) Less(i, j int) bool {
-	return h[i].timestamp < h[j].timestamp
+	if h[i].timestamp != h[j].timestamp {
+		return h[i].timestamp < h[j].timestamp
+	}
+	return h[i].sequence < h[j].sequence
 }
 func (h txHeap) Swap(i, j int) {
 	if i < 0 || j < 0 || i >= len(h) || j >= len(h) {
@@ -68,6 +72,7 @@ type TxOverflowPool struct {
 	mu        sync.RWMutex
 	maxSize   uint64 // Maximum slots
 	totalSize uint64 // Total number of slots currently
+	sequence  uint64 // Monotonic counter handed out to added transactions
 }
 
 func NewTxOverflowPoolHeap(estimatedMaxSize uint64) *TxOverflowPool {
@@ -117,7 +122,9 @@ func (tp *TxOverflowPool) Add(tx *types.Transaction) bool {
 	item := &txHeapItem{
 		tx:        tx,
 		timestamp: time.Now().UnixNano(),
+		sequence:  tp.sequence,
 	}
+	tp.sequence++
 	heap.Push(&tp.txHeap, item)
 	tp.index[tx.Hash()] = item
 	tp.totalSize += txSlots
