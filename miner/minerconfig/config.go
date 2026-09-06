@@ -32,13 +32,20 @@ var (
 	defaultRecommit              = 10 * time.Second
 	defaultMaxWaitProposalInSecs = uint64(45)
 
+	defaultGasCeil = uint64(55_000_000)
 	// Extra time for finalizing and committing blocks (excludes writing to disk).
-	defaultDelayLeftOver         = 25 * time.Millisecond
-	defaultBidSimulationLeftOver = 30 * time.Millisecond
-	// For estimation, assume 500 Mgas/s:
-	//	(100M gas / 500 Mgas/s) * 1000 ms + 10 ms buffer + defaultDelayLeftOver ≈ 235 ms.
-	defaultNoInterruptLeftOver = 235 * time.Millisecond
+	defaultDelayLeftOver         = 15 * time.Millisecond
+	defaultBidSimulationLeftOver = 20 * time.Millisecond
 )
+
+func getDefaultNoInterruptLeftOver() *time.Duration {
+	expectedProcessingSpeed := 500_000_000 // For estimation, assume 500 Mgas/s
+	bidProcessing := float64(defaultGasCeil) / float64(expectedProcessingSpeed)
+	buffer := 10 * time.Millisecond
+	noInterruptLeftOver := time.Duration(bidProcessing*float64(time.Second)) + buffer + defaultDelayLeftOver
+
+	return &noInterruptLeftOver
+}
 
 // Other default MEV-related configurations
 var (
@@ -47,6 +54,9 @@ var (
 	defaultBuilderFeeCeil      = "0"
 	defaultValidatorCommission = uint64(100)
 	defaultMaxBidsPerBuilder   = uint32(2) // Simple strategy: send one bid early, another near deadline
+	// MEV validators accept SendBidBlock by default; the RPC stays gated on the
+	// Pasteur fork and can be disabled via Mev.BidBlockEnabled=false.
+	defaultBidBlockEnabled = true
 )
 
 // Config is the configuration parameters of mining.
@@ -67,9 +77,8 @@ type Config struct {
 
 // DefaultConfig contains default settings for miner.
 var DefaultConfig = Config{
-	GasCeil:  100000000,
+	GasCeil:  defaultGasCeil,
 	GasPrice: big.NewInt(params.GWei),
-
 	// The default recommit time is chosen as two seconds since
 	// consensus-layer usually will wait a half slot of time(6s)
 	// for payload generation. It should be enough for Geth to
@@ -91,6 +100,7 @@ type BuilderConfig struct {
 
 type MevConfig struct {
 	Enabled               *bool           `toml:",omitempty"` // Whether to enable Mev or not
+	BidBlockEnabled       *bool           `toml:",omitempty"` // Whether to accept SendBidBlock RPC (BEP-675); coexists with legacy SendBid
 	GreedyMergeTx         *bool           `toml:",omitempty"` // Whether to merge local transactions to the bid
 	BuilderFeeCeil        *string         `toml:",omitempty"` // The maximum builder fee of a bid
 	SentryURL             string          // The url of Mev sentry
@@ -103,13 +113,14 @@ type MevConfig struct {
 
 var DefaultMevConfig = MevConfig{
 	Enabled:               &defaultMevEnabled,
+	BidBlockEnabled:       &defaultBidBlockEnabled,
 	GreedyMergeTx:         &defaultGreedyMergeTx,
 	BuilderFeeCeil:        &defaultBuilderFeeCeil,
 	SentryURL:             "",
 	Builders:              nil,
 	ValidatorCommission:   &defaultValidatorCommission,
 	BidSimulationLeftOver: &defaultBidSimulationLeftOver,
-	NoInterruptLeftOver:   &defaultNoInterruptLeftOver,
+	NoInterruptLeftOver:   getDefaultNoInterruptLeftOver(),
 	MaxBidsPerBuilder:     &defaultMaxBidsPerBuilder,
 }
 
@@ -138,6 +149,10 @@ func ApplyDefaultMinerConfig(cfg *Config) {
 		cfg.Mev.Enabled = &defaultMevEnabled
 		log.Info("ApplyDefaultMinerConfig", "Mev.Enabled", *cfg.Mev.Enabled)
 	}
+	if cfg.Mev.BidBlockEnabled == nil {
+		cfg.Mev.BidBlockEnabled = &defaultBidBlockEnabled
+		log.Info("ApplyDefaultMinerConfig", "Mev.BidBlockEnabled", *cfg.Mev.BidBlockEnabled)
+	}
 	if cfg.Mev.BuilderFeeCeil == nil {
 		cfg.Mev.BuilderFeeCeil = &defaultBuilderFeeCeil
 		log.Info("ApplyDefaultMinerConfig", "Mev.BuilderFeeCeil", *cfg.Mev.BuilderFeeCeil)
@@ -155,7 +170,7 @@ func ApplyDefaultMinerConfig(cfg *Config) {
 		log.Info("ApplyDefaultMinerConfig", "Mev.BidSimulationLeftOver", *cfg.Mev.BidSimulationLeftOver)
 	}
 	if cfg.Mev.NoInterruptLeftOver == nil {
-		cfg.Mev.NoInterruptLeftOver = &defaultNoInterruptLeftOver
+		cfg.Mev.NoInterruptLeftOver = getDefaultNoInterruptLeftOver()
 		log.Info("ApplyDefaultMinerConfig", "Mev.NoInterruptLeftOver", *cfg.Mev.NoInterruptLeftOver)
 	}
 	if cfg.Mev.MaxBidsPerBuilder == nil {

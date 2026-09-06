@@ -52,6 +52,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto/signify"
 	"github.com/ethereum/go-ethereum/internal/build"
 	"github.com/ethereum/go-ethereum/internal/download"
@@ -92,7 +93,7 @@ func executablePath(name string) string {
 func main() {
 	log.SetFlags(log.Lshortfile)
 
-	if !build.FileExist(filepath.Join("build", "ci.go")) {
+	if !common.FileExist(filepath.Join("build", "ci.go")) {
 		log.Fatal("this script must be run from the root of the repository")
 	}
 	if len(os.Args) < 2 {
@@ -160,7 +161,7 @@ func doInstall(cmdline []string) {
 	// Default: collect all 'main' packages in cmd/ and build those.
 	packages := flag.Args()
 	if len(packages) == 0 {
-		packages = build.FindMainPackages("./cmd")
+		packages = build.FindMainPackages(&tc, "./cmd/...")
 	}
 
 	// Do the build!

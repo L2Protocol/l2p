@@ -20,6 +20,7 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
+	"slices"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -39,8 +40,8 @@ import (
 	"github.com/ethereum/go-ethereum/core/systemcontracts"
 	"github.com/ethereum/go-ethereum/core/txpool"
 	"github.com/ethereum/go-ethereum/core/types"
+	buildertypes "github.com/ethereum/go-ethereum/core/types/builder"
 	"github.com/ethereum/go-ethereum/core/vm"
-	"github.com/ethereum/go-ethereum/crypto/kzg4844"
 	"github.com/ethereum/go-ethereum/event"
 	"github.com/ethereum/go-ethereum/log"
 	"github.com/ethereum/go-ethereum/metrics"
@@ -77,6 +78,15 @@ var (
 	inturnBlocksGauge    = metrics.NewRegisteredGauge("worker/inturnBlocks", nil)
 	bestBidGasUsedGauge  = metrics.NewRegisteredGauge("worker/bestBidGasUsed", nil)  // MGas
 	bestWorkGasUsedGauge = metrics.NewRegisteredGauge("worker/bestWorkGasUsed", nil) // MGas
+	bidBlockExistGauge   = metrics.NewRegisteredGauge("worker/bidBlockExist", nil)
+	bidBlockWinGauge     = metrics.NewRegisteredGauge("worker/bidBlockWin", nil)
+	bidBlockCommitGauge  = metrics.NewRegisteredGauge("worker/bidBlockCommit", nil)
+	bidBlockGasUsedGauge = metrics.NewRegisteredGauge("worker/bidBlockGasUsed", nil) // MGas
+	bidBlockRevokeGauge  = metrics.NewRegisteredGauge("worker/bidBlockRevoke", nil)  // cumulative revoke count
+	// bidBlockVerifyFailedGauge counts sealed BidBlocks that failed async InsertChain verification (cumulative).
+	bidBlockVerifyFailedGauge = metrics.NewRegisteredGauge("worker/bidBlockVerifyFailed", nil)
+	// bidBlockRevokedBuildersGauge snapshots how many builders are revoked, taken at each revoke.
+	bidBlockRevokedBuildersGauge = metrics.NewRegisteredGauge("worker/bidBlockRevokedBuilders", nil)
 
 	writeBlockTimer      = metrics.NewRegisteredTimer("worker/writeblock", nil)
 	finalizeBlockTimer   = metrics.NewRegisteredTimer("worker/finalizeblock", nil)
@@ -95,7 +105,8 @@ var (
 type environment struct {
 	signer   types.Signer
 	state    *state.StateDB // apply state changes here
-	tcount   int            // count of non-system transactions in cycle
+	tcount   int            // tx count in cycle
+	size     uint64         // size of the block we are building
 	gasPool  *core.GasPool  // available gas used to pack transactions
 	coinbase common.Address
 	evm      *vm.EVM
@@ -127,8 +138,15 @@ type task struct {
 	state    *state.StateDB
 	block    *types.Block
 
+	bidBlockInfo *bidBlockTaskInfo
+
 	createdAt     time.Time
 	miningStartAt time.Time
+}
+
+// txFits reports whether the transaction fits into the block size limit.
+func (env *environment) txFitsSize(tx *types.Transaction) bool {
+	return env.size+tx.Size() < params.MaxBlockSize-maxBlockSizeBufferZone
 }
 
 const (
@@ -139,6 +157,11 @@ const (
 	commitInterruptOutOfGas
 	commitInterruptBetterBid
 )
+
+// Block size is capped by the protocol at params.MaxBlockSize. When producing blocks, we
+// try to say below the size including a buffer zone, this is to avoid going over the
+// maximum size with auxiliary data added into the block.
+const maxBlockSizeBufferZone = 1_000_000
 
 // newWorkReq represents a request for new sealing work submitting with relative interrupt notifier.
 type newWorkReq struct {
@@ -167,6 +190,7 @@ type getWorkReq struct {
 type bidFetcher interface {
 	GetBestBid(parentHash common.Hash) *BidRuntime
 	GetSimulatingBid(prevBlockHash common.Hash) *BidRuntime
+	GetBestBidBlock(parentHash common.Hash) *buildertypes.DecodedBidBlock
 }
 
 // worker is the main object which takes care of submitting new work to consensus engine
@@ -178,6 +202,7 @@ type worker struct {
 	chainConfig *params.ChainConfig
 	engine      consensus.Engine
 	eth         Backend
+	permMgr     *BidBlockPermissionManager
 	prio        []common.Address // A list of senders to prioritize
 	chain       *core.BlockChain
 
@@ -223,14 +248,22 @@ type worker struct {
 	resubmitHook func(time.Duration, time.Duration) // Method to call upon updating resubmitting interval.
 }
 
-func newWorker(config *minerconfig.Config, engine consensus.Engine, eth Backend, mux *event.TypeMux) *worker {
+func newWorker(config *minerconfig.Config, engine consensus.Engine, eth Backend, mux *event.TypeMux, permMgr *BidBlockPermissionManager) *worker {
+	if permMgr == nil {
+		permMgr = NewBidBlockPermissionManager()
+	}
 	chainConfig := eth.BlockChain().Config()
+	prefetcher := core.NewStatePrefetcher(chainConfig, eth.BlockChain().HeadChain())
+	if config.Mev.Enabled != nil && *config.Mev.Enabled {
+		prefetcher.EnableMevMode()
+	}
 	worker := &worker{
-		prefetcher:         core.NewStatePrefetcher(chainConfig, eth.BlockChain().HeadChain()),
+		prefetcher:         prefetcher,
 		config:             config,
 		chainConfig:        chainConfig,
 		engine:             engine,
 		eth:                eth,
+		permMgr:            permMgr,
 		chain:              eth.BlockChain(),
 		mux:                mux,
 		coinbase:           config.Etherbase,
@@ -429,7 +462,7 @@ func (w *worker) newWorkLoop(recommit time.Duration) {
 			// If sealing is running resubmit a new work cycle periodically to pull in
 			// higher priced transactions. Disable this overhead for pending blocks.
 			if w.isRunning() && ((w.chainConfig.Clique != nil &&
-				w.chainConfig.Clique.Period > 0) || (w.chainConfig.Parlia != nil)) {
+				w.chainConfig.Clique.Period > 0) || (w.chainConfig.IsInBSC())) {
 				// Short circuit if no new transaction arrives.
 				commit(commitInterruptResubmit)
 			}
@@ -559,6 +592,17 @@ func (w *worker) resultLoop() {
 				log.Error("Block found but no relative pending task", "number", block.Number(), "sealhash", sealhash, "hash", hash)
 				continue
 			}
+
+			if !w.recordMinedBlock(block) {
+				continue
+			}
+
+			// BidBlock path: broadcast first, then InsertChain for async verification
+			if task.bidBlockInfo != nil {
+				w.handleBidBlockResult(block, task)
+				continue
+			}
+
 			// Different block could share same sealhash, deep copy here to prevent write-write conflict.
 			var (
 				receipts = make([]*types.Receipt, len(task.receipts))
@@ -586,37 +630,6 @@ func (w *worker) resultLoop() {
 				logs = append(logs, receipt.Logs...)
 			}
 
-			if prev, ok := w.recentMinedBlocks.Get(block.NumberU64()); ok {
-				doubleSign := false
-				prevParents := prev
-				for _, prevParent := range prevParents {
-					if prevParent == block.ParentHash() {
-						log.Error("Reject Double Sign!!", "block", block.NumberU64(),
-							"hash", block.Hash(),
-							"root", block.Root(),
-							"ParentHash", block.ParentHash())
-						doubleSign = true
-						break
-					}
-				}
-				if doubleSign {
-					continue
-				}
-				prevParents = append(prevParents, block.ParentHash())
-				w.recentMinedBlocks.Add(block.NumberU64(), prevParents)
-			} else {
-				// Add() will call removeOldest internally to remove the oldest element
-				// if the LRU Cache is full
-				w.recentMinedBlocks.Add(block.NumberU64(), []common.Hash{block.ParentHash()})
-			}
-
-			// add BAL to the block
-			bal := task.state.GetEncodedBlockAccessList(block)
-			if bal != nil && w.engine.SignBAL(bal) == nil {
-				block = block.WithBAL(bal)
-			}
-			task.state.DumpAccessList(block)
-
 			// Commit block and state to database.
 			start := time.Now()
 			status, err := w.chain.WriteBlockAndSetHead(block, receipts, logs, task.state, w.mux)
@@ -633,13 +646,33 @@ func (w *worker) resultLoop() {
 			stats.SendBlockTime.Store(time.Now().UnixMilli())
 			stats.StartMiningTime.Store(task.miningStartAt.UnixMilli())
 			log.Info("Successfully seal and write new block", "number", block.Number(), "hash", hash, "time", block.Header().MilliTimestamp(), "sealhash", sealhash,
-				"block size(noBal)", block.Size(), "balSize", block.BALSize(), "elapsed", common.PrettyDuration(time.Since(task.createdAt)))
+				"block size", block.Size(), "elapsed", common.PrettyDuration(time.Since(task.createdAt)))
 			w.mux.Post(core.NewMinedBlockEvent{Block: block})
 
 		case <-w.exitCh:
 			return
 		}
 	}
+}
+
+// recordMinedBlock records the mined parent for this height and rejects repeat signing.
+func (w *worker) recordMinedBlock(block *types.Block) bool {
+	if prev, ok := w.recentMinedBlocks.Get(block.NumberU64()); ok {
+		if slices.Contains(prev, block.ParentHash()) {
+			log.Error("Reject Double Sign!!", "block", block.NumberU64(),
+				"hash", block.Hash(),
+				"root", block.Root(),
+				"ParentHash", block.ParentHash())
+			return false
+		}
+		prevParents := append(prev, block.ParentHash())
+		w.recentMinedBlocks.Add(block.NumberU64(), prevParents)
+	} else {
+		// Add() will call removeOldest internally to remove the oldest element
+		// if the LRU Cache is full.
+		w.recentMinedBlocks.Add(block.NumberU64(), []common.Hash{block.ParentHash()})
+	}
+	return true
 }
 
 // makeEnv creates a new environment for the sealing block.
@@ -656,19 +689,16 @@ func (w *worker) makeEnv(parent *types.Header, header *types.Header, coinbase co
 		if err != nil {
 			return nil, err
 		}
-		state.StartPrefetcher("miner", bundle)
+		state.StartPrefetcher("miner", bundle, nil)
 	} else {
-		if prevEnv == nil {
-			state.StartPrefetcher("miner", nil)
-		} else {
-			state.TransferPrefetcher(prevEnv.state)
-		}
+		state.StartPrefetcher("miner", nil, nil)
 	}
 
 	// Note the passed coinbase may be different with header.Coinbase.
 	env := &environment{
 		signer:   types.MakeSigner(w.chainConfig, header.Number, header.Time),
 		state:    state,
+		size:     uint64(header.Size()),
 		coinbase: coinbase,
 		header:   header,
 		witness:  state.Witness(),
@@ -690,6 +720,8 @@ func (w *worker) commitTransaction(env *environment, tx *types.Transaction, rece
 	}
 	env.txs = append(env.txs, tx)
 	env.receipts = append(env.receipts, receipt)
+	env.size += tx.Size()
+	env.tcount++
 	return receipt.Logs, nil
 }
 
@@ -712,10 +744,12 @@ func (w *worker) commitBlobTransaction(env *environment, tx *types.Transaction, 
 		return nil, err
 	}
 	sc.TxIndex = uint64(len(env.txs))
-	env.txs = append(env.txs, tx.WithoutBlobTxSidecar())
+	txNoBlob := tx.WithoutBlobTxSidecar()
+	env.txs = append(env.txs, txNoBlob)
 	env.receipts = append(env.receipts, receipt)
 	env.sidecars = append(env.sidecars, sc)
 	env.blobs += len(sc.Blobs)
+	env.size += txNoBlob.Size()
 	env.tcount++
 	*env.header.BlobGasUsed += receipt.BlobGasUsed
 	return receipt.Logs, nil
@@ -738,7 +772,10 @@ func (w *worker) applyTransaction(env *environment, tx *types.Transaction, recei
 
 func (w *worker) commitTransactions(env *environment, plainTxs, blobTxs *transactionsByPriceAndNonce,
 	interruptCh chan int32, stopTimer *time.Timer) error {
-	gasLimit := env.header.GasLimit
+	var (
+		isCancun = w.chainConfig.IsCancun(env.header.Number, env.header.Time)
+		gasLimit = env.header.GasLimit
+	)
 	if env.gasPool == nil {
 		env.gasPool = new(core.GasPool).AddGas(gasLimit)
 		if p, ok := w.engine.(*parlia.Parlia); ok {
@@ -844,7 +881,7 @@ LOOP:
 		// Most of the blob gas logic here is agnostic as to if the chain supports
 		// blobs or not, however the max check panics when called on a chain without
 		// a defined schedule, so we need to verify it's safe to call.
-		if w.chainConfig.IsCancun(env.header.Number, env.header.Time) {
+		if isCancun {
 			left := eip4844.MaxBlobsPerBlock(w.chainConfig, env.header.Time) - env.blobs
 			if left < int(ltx.BlobGas/params.BlobTxBlobGasPerBlob) {
 				log.Trace("Not enough blob space left for transaction", "hash", ltx.Hash, "left", left, "needed", ltx.BlobGas/params.BlobTxBlobGasPerBlob)
@@ -861,23 +898,11 @@ LOOP:
 			continue
 		}
 
-		// Make sure all transactions after osaka have cell proofs
-		if w.chainConfig.IsOsaka(env.header.Number, env.header.Time) {
-			if sidecar := tx.BlobTxSidecar(); sidecar != nil {
-				if sidecar.Version == 0 {
-					log.Info("Including blob tx with v0 sidecar, recomputing proofs", "hash", ltx.Hash)
-					sidecar.Proofs = make([]kzg4844.Proof, 0, len(sidecar.Blobs)*kzg4844.CellProofsPerBlob)
-					for _, blob := range sidecar.Blobs {
-						cellProofs, err := kzg4844.ComputeCellProofs(&blob)
-						if err != nil {
-							panic(err)
-						}
-						sidecar.Proofs = append(sidecar.Proofs, cellProofs...)
-					}
-				}
-			}
+		// if inclusion of the transaction would put the block size over the
+		// maximum we allow, don't add any more txs to the payload.
+		if !env.txFitsSize(tx) {
+			break
 		}
-
 		// Error may be ignored here. The error has already been checked
 		// during transaction acceptance in the transaction pool.
 		from, _ := types.Sender(env.signer, tx)
@@ -901,7 +926,6 @@ LOOP:
 
 		case errors.Is(err, nil):
 			// Everything ok, shift in the next transaction from the same account
-			env.tcount++
 			txs.Shift()
 
 		default:
@@ -972,7 +996,7 @@ func (w *worker) prepareWork(genParams *generateParams, witness bool) (*environm
 	// Set baseFee and GasLimit if we are on an EIP-1559 chain
 	if w.chainConfig.IsLondon(header.Number) {
 		header.BaseFee = eip1559.CalcBaseFee(w.chainConfig, parent)
-		if w.chainConfig.Parlia == nil && !w.chainConfig.IsLondon(parent.Number) {
+		if w.chainConfig.IsNotInBSC() && !w.chainConfig.IsLondon(parent.Number) {
 			parentGasLimit := parent.GasLimit * w.chainConfig.ElasticityMultiplier()
 			header.GasLimit = core.CalcGasLimit(parentGasLimit, w.config.GasCeil)
 		}
@@ -991,7 +1015,7 @@ func (w *worker) prepareWork(genParams *generateParams, witness bool) (*environm
 		}
 		header.BlobGasUsed = new(uint64)
 		header.ExcessBlobGas = &excessBlobGas
-		if w.chainConfig.Parlia == nil {
+		if w.chainConfig.IsNotInBSC() {
 			header.ParentBeaconRoot = genParams.beaconRoot
 		} else {
 			header.WithdrawalsHash = &types.EmptyWithdrawalsHash
@@ -1045,15 +1069,25 @@ func (w *worker) fillTransactions(interruptCh chan int32, env *environment, stop
 		filter.BlobFee = uint256.MustFromBig(eip4844.CalcBlobFee(w.chainConfig, env.header))
 	}
 
-	filter.OnlyPlainTxs, filter.OnlyBlobTxs = true, false
+	if w.chainConfig.IsOsaka(env.header.Number, env.header.Time) {
+		filter.GasLimitCap = params.MaxTxGas
+	}
+	filter.BlobTxs = false
 	plainTxsStart := time.Now()
 	pendingPlainTxs := w.eth.TxPool().Pending(filter)
 	pendingPlainTxsTimer.UpdateSince(plainTxsStart)
 
-	filter.OnlyPlainTxs, filter.OnlyBlobTxs = false, true
-	blobTxsStart := time.Now()
-	pendingBlobTxs := w.eth.TxPool().Pending(filter)
-	pendingBlobTxsTimer.UpdateSince(blobTxsStart)
+	var pendingBlobTxs map[common.Address][]*txpool.LazyTransaction
+	if env.header.Number.Uint64()%params.BlobEligibleBlockInterval == 0 {
+		filter.BlobTxs = true
+		filter.BlobVersion = types.BlobSidecarVersion0
+
+		blobTxsStart := time.Now()
+		pendingBlobTxs = w.eth.TxPool().Pending(filter)
+		pendingBlobTxsTimer.UpdateSince(blobTxsStart)
+	} else {
+		pendingBlobTxs = make(map[common.Address][]*txpool.LazyTransaction)
+	}
 
 	if bidTxs != nil {
 		filterBidTxs := func(commonTxs map[common.Address][]*txpool.LazyTransaction) {
@@ -1112,14 +1146,24 @@ func (w *worker) fillTransactions(interruptCh chan int32, env *environment, stop
 }
 
 // generateWork generates a sealing block based on the given parameters.
-func (w *worker) generateWork(params *generateParams, witness bool) *newPayloadResult {
-	work, err := w.prepareWork(params, witness)
+func (w *worker) generateWork(genParam *generateParams, witness bool) *newPayloadResult {
+	work, err := w.prepareWork(genParam, witness)
 	if err != nil {
 		return &newPayloadResult{err: err}
 	}
 	defer work.discard()
 
-	if !params.noTxs {
+	// Check withdrawals fit max block size.
+	// Due to the cap on withdrawal count, this can actually never happen, but we still need to
+	// check to ensure the CL notices there's a problem if the withdrawal cap is ever lifted.
+	maxBlockSize := params.MaxBlockSize - maxBlockSizeBufferZone
+	if genParam.withdrawals.Size() > maxBlockSize {
+		return &newPayloadResult{err: errors.New("withdrawals exceed max block size")}
+	}
+	// Also add size of withdrawals to work block size.
+	work.size += uint64(genParam.withdrawals.Size())
+
+	if !genParam.noTxs {
 		interrupt := new(atomic.Int32)
 		timer := time.AfterFunc(*w.config.Recommit, func() {
 			interrupt.Store(commitInterruptTimeout)
@@ -1131,14 +1175,14 @@ func (w *worker) generateWork(params *generateParams, witness bool) *newPayloadR
 			log.Warn("Block building is interrupted", "allowance", common.PrettyDuration(w.recommit))
 		}
 	}
-	body := types.Body{Transactions: work.txs, Withdrawals: params.withdrawals}
+	body := types.Body{Transactions: work.txs, Withdrawals: genParam.withdrawals}
 	allLogs := make([]*types.Log, 0)
 	for _, r := range work.receipts {
 		allLogs = append(allLogs, r.Logs...)
 	}
 	// Collect consensus-layer requests if Prague is enabled.
 	var requests [][]byte
-	if w.chainConfig.IsPrague(work.header.Number, work.header.Time) && w.chainConfig.Parlia == nil {
+	if w.chainConfig.IsPrague(work.header.Number, work.header.Time) && w.chainConfig.IsNotInBSC() {
 		requests = [][]byte{}
 		// EIP-6110 deposits
 		if err := core.ParseDepositLogs(&requests, allLogs, w.chainConfig); err != nil {
@@ -1385,8 +1429,18 @@ LOOP:
 
 	// when out-turn, use bestWork to prevent bundle leakage.
 	// when in-turn, compare with remote work.
+	var bestBid *BidRuntime
+	var bestBidBlock *buildertypes.DecodedBidBlock
+	var bidBlockCommitted bool
+	var bidBlockFallback bool
+	var simBidBlockReward *uint256.Int
+	var simBidValidatorReward *uint256.Int
+	var localValidatorReward *uint256.Int
 	if w.bidFetcher != nil && bestWork.header.Difficulty.Cmp(diffInTurn) == 0 {
 		inturnBlocksGauge.Inc(1)
+		localValidatorReward = new(uint256.Int).Mul(bestReward, uint256.NewInt(*w.config.Mev.ValidatorCommission))
+		localValidatorReward.Div(localValidatorReward, uint256.NewInt(10000))
+
 		// We want to start sealing the block as late as possible here if mev is enabled, so we could give builder the chance to send their final bid.
 		// Time left till sealing the block.
 		tillSealingTime := time.Until(time.UnixMilli(int64(bestWork.header.MilliTimestamp()))) - *w.config.DelayLeftOver
@@ -1405,41 +1459,72 @@ LOOP:
 			}
 		}
 
-		bestBid := w.bidFetcher.GetBestBid(bestWork.header.ParentHash)
-
+		// Stage 1 candidate A — legacy SendBid (simBid).
+		bestBid = w.bidFetcher.GetBestBid(bestWork.header.ParentHash)
 		if bestBid != nil {
 			bidExistGauge.Inc(1)
 			bestBidGasUsedGauge.Update(int64(bestBid.bid.GasUsed) / 1_000_000)
 			bestWorkGasUsedGauge.Update(int64(bestWork.header.GasUsed) / 1_000_000)
-
-			log.Debug("BidSimulator: final compare", "block", bestWork.header.Number.Uint64(),
-				"localBlockReward", bestReward.String(),
-				"bidBlockReward", bestBid.packedBlockReward.String())
+			simBidBlockReward = uint256.MustFromBig(bestBid.packedBlockReward)
+			simBidValidatorReward = uint256.MustFromBig(bestBid.packedValidatorReward)
 		}
 
-		if bestBid != nil && bestReward.CmpBig(bestBid.packedBlockReward) < 0 {
-			// localValidatorReward is the reward for the validator self by the local block.
-			localValidatorReward := new(uint256.Int).Mul(bestReward, uint256.NewInt(*w.config.Mev.ValidatorCommission))
-			localValidatorReward.Div(localValidatorReward, uint256.NewInt(10000))
+		// Stage 1 candidate B — SendBidBlock.
+		bestBidBlock = w.bidFetcher.GetBestBidBlock(parentHash)
+		if bestBidBlock != nil {
+			bidBlockExistGauge.Inc(1)
+		}
+	}
 
-			log.Debug("BidSimulator: final compare", "block", bestWork.header.Number.Uint64(),
-				"localValidatorReward", localValidatorReward.String(),
-				"bidValidatorReward", bestBid.packedValidatorReward.String())
+	if bestBidBlock != nil && w.selectBidBlock(bestBidBlock, simBidBlockReward, simBidValidatorReward, bestReward) {
+		bidBlockWinGauge.Inc(1)
+		task, err := w.prepareBidBlockTask(bestBidBlock, start)
+		if err != nil {
+			log.Error("Failed to prepare bid block, fallback",
+				"builder", bestBidBlock.Builder,
+				"err", err)
+			bidBlockFallback = true
+		} else {
+			systemTxCount := len(bestBidBlock.Txs) - bestBidBlock.SystemTxStart
+			w.enqueueBidBlockTask(task, systemTxCount)
+			bidBlockCommitted = true
+			bidBlockCommitGauge.Inc(1)
+			bidBlockGasUsedGauge.Update(int64(bestBidBlock.Header.GasUsed) / 1_000_000)
+			bestWorkGasUsedGauge.Update(int64(bestWork.header.GasUsed) / 1_000_000)
+		}
+	}
 
-			// blockReward(benefits delegators) and validatorReward(benefits the validator) are both optimal
-			if localValidatorReward.CmpBig(bestBid.packedValidatorReward) < 0 {
-				bidWinGauge.Inc(1)
+	if bidBlockCommitted {
+		if w.current != nil {
+			w.current.discard()
+			w.current = nil
+		}
+		return
+	}
 
-				bestWork = bestBid.env
-
-				log.Info("[BUILDER BLOCK]",
-					"block", bestWork.header.Number.Uint64(),
-					"builder", bestBid.bid.Builder,
-					"blockReward", weiToEtherStringF6(bestBid.packedBlockReward),
-					"validatorReward", weiToEtherStringF6(bestBid.packedValidatorReward),
-					"bid", bestBid.bid.Hash().TerminalString(),
-				)
+	// simBid fallback. Re-runs the legacy dual-threshold gate against simBid
+	// whenever no BidBlock is being committed.
+	if bestBid != nil {
+		if bestReward.Cmp(simBidBlockReward) < 0 &&
+			localValidatorReward.Cmp(simBidValidatorReward) < 0 {
+			bidWinGauge.Inc(1)
+			if bestBid.greedyMerged {
+				greedyMergeOnchainCounter.Inc(1)
 			}
+			bestWork = bestBid.env
+			// Record MEV v1 (bid path) source and builder address.
+			setBidMevInfo(bestWork.header, bestBid.bid.Builder, false)
+			logMsg := "[BUILDER BLOCK]"
+			if bidBlockFallback {
+				logMsg = "[BUILDER BLOCK] (simBid fallback)"
+			}
+			log.Info(logMsg,
+				"block", bestWork.header.Number.Uint64(),
+				"builder", bestBid.bid.Builder,
+				"blockReward", weiToEtherStringF6(simBidBlockReward.ToBig()),
+				"validatorReward", weiToEtherStringF6(simBidValidatorReward.ToBig()),
+				"bid", bestBid.bid.Hash().TerminalString(),
+			)
 		}
 	}
 
