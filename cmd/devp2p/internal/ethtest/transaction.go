@@ -52,7 +52,10 @@ func (s *Suite) sendTxs(t *utesting.T, txs []*types.Transaction) error {
 		return fmt.Errorf("peering failed: %v", err)
 	}
 
-	encTxs, _ := rlp.EncodeToRawList(txs)
+	encTxs, err := rlp.EncodeToRawList(txs)
+	if err != nil {
+		return fmt.Errorf("failed to encode transactions: %v", err)
+	}
 	if err = sendConn.Write(ethProto, eth.TransactionsMsg, eth.TransactionsPacket{RawList: encTxs}); err != nil {
 		return fmt.Errorf("failed to write message to connection: %v", err)
 	}

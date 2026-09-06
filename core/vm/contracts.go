@@ -522,19 +522,7 @@ type bigModExp struct {
 	eip7883 bool
 }
 
-var (
-	big1      = big.NewInt(1)
-	big3      = big.NewInt(3)
-	big7      = big.NewInt(7)
-	big20     = big.NewInt(20)
-	big32     = big.NewInt(32)
-	big64     = big.NewInt(64)
-	big96     = big.NewInt(96)
-	big480    = big.NewInt(480)
-	big1024   = big.NewInt(1024)
-	big3072   = big.NewInt(3072)
-	big199680 = big.NewInt(199680)
-)
+var big1 = big.NewInt(1)
 
 // byzantiumMultComplexity implements the bigModexp multComplexity formula, as defined in EIP-198.
 //

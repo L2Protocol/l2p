@@ -4247,27 +4247,6 @@ func TestEstimateGasWithMovePrecompile(t *testing.T) {
 	}
 }
 
-type configTimeBackend struct {
-	*testBackend
-	genesis *core.Genesis
-	time    uint64
-}
-
-func (b configTimeBackend) ChainConfig() *params.ChainConfig {
-	return b.genesis.Config
-}
-
-func (b configTimeBackend) HeaderByNumber(_ context.Context, n rpc.BlockNumber) (*types.Header, error) {
-	if n == 0 {
-		return b.genesis.ToBlock().Header(), nil
-	}
-	panic("not implemented")
-}
-
-func (b configTimeBackend) CurrentHeader() *types.Header {
-	return &types.Header{Time: b.time}
-}
-
 func (b *testBackend) RPCTxSyncDefaultTimeout() time.Duration {
 	if b.syncDefaultTimeout != 0 {
 		return b.syncDefaultTimeout
