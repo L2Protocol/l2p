@@ -1,9 +1,8 @@
-0001-diff-go-ethereum.patch
 diff --git a/core/vm/contracts.go b/core/vm/contracts.go
-index ff59b3958..86463a585 100644
+index fd9026a68..22dccc4b5 100644
 --- a/core/vm/contracts.go
 +++ b/core/vm/contracts.go
-@@ -221,9 +221,6 @@ var PrecompiledContractsCancun = PrecompiledContracts{
+@@ -200,9 +200,6 @@ var PrecompiledContractsCancun = PrecompiledContracts{
  	common.BytesToAddress([]byte{0x8}):  &bn256PairingIstanbul{},
  	common.BytesToAddress([]byte{0x9}):  &blake2F{},
  	common.BytesToAddress([]byte{0x0a}): &kzgPointEvaluation{},
@@ -13,7 +12,7 @@ index ff59b3958..86463a585 100644
  }
  
  // PrecompiledContractsHaber contains the default set of pre-compiled Ethereum
-@@ -266,11 +263,6 @@ var PrecompiledContractsPrague = PrecompiledContracts{
+@@ -245,11 +242,6 @@ var PrecompiledContractsPrague = PrecompiledContracts{
  	common.BytesToAddress([]byte{0x0f}): &bls12381Pairing{},
  	common.BytesToAddress([]byte{0x10}): &bls12381MapG1{},
  	common.BytesToAddress([]byte{0x11}): &bls12381MapG2{},
@@ -21,15 +20,25 @@ index ff59b3958..86463a585 100644
 -	common.BytesToAddress([]byte{0x66}): &blsSignatureVerify{},
 -	common.BytesToAddress([]byte{0x68}): &verifyDoubleSignEvidence{},
 -
--	common.BytesToAddress([]byte{0x1, 0x00}): &p256Verify{},
+-	common.BytesToAddress([]byte{0x01, 0x00}): &p256Verify{},
  }
  
  var PrecompiledContractsBLS = PrecompiledContractsPrague
+@@ -277,9 +269,6 @@ var PrecompiledContractsOsaka = PrecompiledContracts{
+ 	common.BytesToAddress([]byte{0x10}): &bls12381MapG1{},
+ 	common.BytesToAddress([]byte{0x11}): &bls12381MapG2{},
+ 
+-	common.BytesToAddress([]byte{0x66}): &blsSignatureVerify{},
+-	common.BytesToAddress([]byte{0x68}): &verifyDoubleSignEvidence{},
+-
+ 	common.BytesToAddress([]byte{0x01, 0x00}): &p256Verify{eip7951: true},
+ }
+ 
 diff --git a/core/vm/jump_table.go b/core/vm/jump_table.go
-index 5c1d36638..de2df041b 100644
+index f45966a9c..7924c04dc 100644
 --- a/core/vm/jump_table.go
 +++ b/core/vm/jump_table.go
-@@ -108,7 +108,7 @@ func newCancunInstructionSet() JumpTable {
+@@ -115,7 +115,7 @@ func newCancunInstructionSet() JumpTable {
  }
  
  func newShanghaiInstructionSet() JumpTable {
