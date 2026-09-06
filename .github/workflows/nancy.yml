@@ -41,7 +41,8 @@ jobs:
         OSSINDEX_TOKEN: ${{ secrets.OSSINDEX_TOKEN }}
       run: |
         if [[ -z "${OSSINDEX_USERNAME:-}" || -z "${OSSINDEX_TOKEN:-}" ]]; then
-          echo "::error::Missing OSS Index credentials"
+          echo "::warning::Missing OSS Index credentials, falling back to an anonymous (rate-limited) scan"
+          go list -json -deps ./... | nancy sleuth
+        else
+          go list -json -deps ./... | nancy sleuth --username "${OSSINDEX_USERNAME}" --token "${OSSINDEX_TOKEN}"
         fi
-        
-        go list -json -deps ./... | nancy sleuth --username "${OSSINDEX_USERNAME}" --token "${OSSINDEX_TOKEN}"
