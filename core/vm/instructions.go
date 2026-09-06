@@ -342,7 +342,7 @@ func opExtCodeSize(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext)
 func opCodeSize(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]byte, error) {
 	code := scope.Contract.Code
 	if scope.Contract.optimized {
-		code = interpreter.evm.resolveCode(scope.Contract.address)
+		code = interpreter.evm.resolveCode(*scope.Contract.CodeAddr)
 	}
 	scope.Stack.push(new(uint256.Int).SetUint64(uint64(len(code))))
 	return nil, nil
@@ -359,7 +359,7 @@ func opCodeCopy(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([
 	}
 	code := scope.Contract.Code
 	if scope.Contract.optimized {
-		code = interpreter.evm.resolveCode(scope.Contract.address)
+		code = interpreter.evm.resolveCode(*scope.Contract.CodeAddr)
 	}
 	codeCopy := getData(code, uint64CodeOffset, length.Uint64())
 	scope.Memory.Set(memOffset.Uint64(), length.Uint64(), codeCopy)
@@ -1498,11 +1498,13 @@ func opSwap1Push1Dup1NotSwap2AddAndDup2AddSwap1Dup2LT(pc *uint64, interpreter *E
 	e := scope.Stack.Back(1)
 	c.Add(e, c)
 	scope.Stack.swap1()
-	g, h := *c, scope.Stack.peek()
-	if g.Lt(h) {
-		h.SetOne()
+	// Match the raw DUP2, LT sequence: compare the computed value now at
+	// stack[len-2] against the original top value at stack[len-1].
+	computed, original := *scope.Stack.Back(1), scope.Stack.peek()
+	if computed.Lt(original) {
+		original.SetOne()
 	} else {
-		h.Clear()
+		original.Clear()
 	}
 
 	*pc += 10
