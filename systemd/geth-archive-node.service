@@ -1,0 +1,42 @@
+[Unit]
+Description=Geth L2P Blockchain Node
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=geth
+Group=geth
+ExecStart=/usr/local/bin/geth \
+  --datadir /var/lib/geth \
+  --syncmode full \
+  --gcmode archive \
+  --networkid 12216 \
+  --port 31398 \
+  --discovery.port 31398 \
+  --discovery.v5 \
+  --config /etc/geth/config.toml \
+  --nodekey /etc/geth/node.key \
+  --cache 2048 \
+  --txlookuplimit 0 \
+  --history.logs 0 \
+  --history.state 0 \
+  --history.transactions 0 \
+  --nat extip:<your-external-ip>
+
+Restart=on-failure
+RestartSec=5
+KillSignal=SIGTERM
+TimeoutStopSec=120
+LimitNOFILE=65536
+LimitNPROC=512
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=geth
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,47 @@
+[Unit]
+Description=Geth L2P Blockchain Validator Node
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=geth
+Group=geth
+ExecStart=/usr/local/bin/geth \
+  --datadir /var/lib/geth \
+  --syncmode full \
+  --networkid 12216 \
+  --port 31398 \
+  --discovery.port 31398 \
+  --miner.etherbase <your-validator-address> \
+  --unlock <your-validator-address> \
+  --password /etc/geth/validator.pwd \
+  --config /etc/geth/config.toml \
+  --discovery.v5 \
+  --txlookuplimit 0 \
+  --nodekey /etc/geth/node.key \
+  --history.logs 0 \
+  --history.state 0 \
+  --history.transactions 0 \
+  --allow-insecure-unlock \
+  --mine \
+  --vote \
+  --blspassword /etc/geth/validator.pwd \
+  --nat extip:<your-external-ip>
+
+Restart=on-failure
+RestartSec=5
+KillSignal=SIGTERM
+TimeoutStopSec=120
+LimitNOFILE=65536
+LimitNPROC=512
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=geth
+
+[Install]
+WantedBy=multi-user.target
