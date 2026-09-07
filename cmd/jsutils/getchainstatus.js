@@ -27,7 +27,6 @@ function printUsage() {
     console.log("  GetBlobTxs: get BlobTxs of a block range");
     console.log("  GetFaucetStatus: get faucet status of BSC testnet");
     console.log("  GetKeyParameters: dump some key governance parameter");
-    console.log("  GetMevStatus: get mev blocks of a block range");
     console.log("  GetLargeTxs: get large txs of a block range");
     console.log("\nOptions:");
     console.log("  --rpc        specify the url of RPC endpoint");
@@ -51,7 +50,6 @@ function printUsage() {
     console.log("  node getchainstatus.js GetFaucetStatus --rpc https://bsc-testnet-dataseed.bnbchain.org --startNum 40000001  --endNum 40000010");
     console.log("  node getchainstatus.js GetKeyParameters --rpc https://bsc-testnet-dataseed.bnbchain.org"); // default: latest block
     console.log("  node getchainstatus.js GetEip7623 --rpc https://bsc-testnet-dataseed.bnbchain.org --startNum 40000001  --endNum 40000010");
-    console.log("  node getchainstatus.js GetMevStatus --rpc https://bsc-testnet-dataseed.bnbchain.org --startNum 40000001  --endNum 40000010");
     console.log("  node getchainstatus.js GetLargeTxs --rpc https://bsc-testnet-dataseed.bnbchain.org --startNum 40000001  --num 100 --gasUsedThreshold 5000000");
 }
 
@@ -210,137 +208,6 @@ const validatorMap = new Map([
     ['0xa7deE0bCAEb78849Ec4aD4e2f48688D2e9f2315B', ['KrakV'     , '0x6563AA29C30d9f80968c2fb7DFFed092a03FBdeD', '0x848ffc9a3fac00d9fbaebcb63f2b7c0a4747d9ffecd4b484073ad03d91584cb51af29870c1c8421b757f4f6fae813288']],
     ['0x32415e630B9B3489639dEE7de21274Ab64016226', ['Kraken'     , '0x70Cd30d9216AF7A5654D245e9F5c649b811aB2eB', '0xa80ebd07bd9d717bd538413e8830f673e63dfad496c901de324be5d16b0496aee39352ecfb84fa58d8d8a67746f8ae6c']],
 ]);
-
-const builderMap = new Map([
-    // BSC mainnet
-    //     blockrazor
-    ["0x5532CdB3c0c4278f9848fc4560b495b70bA67455", "blockrazor dublin"],
-    ["0xBA4233f6e478DB76698b0A5000972Af0196b7bE1", "blockrazor frankfurt"],
-    ["0x539E24781f616F0d912B60813aB75B7b80b75C53", "blockrazor nyc"],
-    ["0x49D91b1Ab0CC6A1591c2e5863E602d7159d36149", "blockrazor relay"],
-    ["0x50061047B9c7150f0Dc105f79588D1B07D2be250", "blockrazor tokyo"],
-    ["0x0557E8CB169F90F6eF421a54e29d7dd0629Ca597", "blockrazor virginia"],
-    ["0x488e37fcB2024A5B2F4342c7dE636f0825dE6448", "blockrazor x"],
-    //     puissant
-    ["0x48a5Ed9abC1a8FBe86ceC4900483f43a7f2dBB48", "puissant ap"],
-    ["0x487e5Dfe70119C1b320B8219B190a6fa95a5BB48", "puissant eu"],
-    ["0x48FeE1BB3823D72fdF80671ebaD5646Ae397BB48", "puissant us"],
-    ["0x48B4bBEbF0655557A461e91B8905b85864B8BB48", "puissant x"],
-    ["0x4827b423D03a349b7519Dda537e9A28d31ecBB48", "puissant y"],
-    ["0x48B2665E5E9a343409199D70F7495c8aB660BB48", "puissant z"],
-    //     unknown 
-    ["0x48265F91F542dCE47ABE5E6683bb086c0f36BB48", "unknown-1"],
-    ["0x48437A0d4AB091b81c6DeD43dEbf23cdfC85BB48", "unknown-2"],
-    ["0x4851f44038fE746173e9E3C4A6e7E904c619BB48", "unknown-3"],
-    ["0x4880cb180d3bb665748f7b66f75F1fEE68D8BB48", "unknown-4"],
-    //     blockroute
-    ["0xD4376FdC9b49d90e6526dAa929f2766a33BFFD52", "blockroute dublin"],
-    ["0x2873fc7aD9122933BECB384f5856f0E87918388d", "blockroute frankfurt"],
-    ["0x432101856a330aafdeB049dD5fA03a756B3f1c66", "blockroute japan"],
-    ["0x2B217a4158933AAdE6D6494e3791D454B4D13AE7", "blockroute nyc"],
-    ["0x0da52E9673529b6E06F444FbBED2904A37f66415", "blockroute relay"],
-    ["0xE1ec1AeCE7953ecB4539749B9AA2eEF63354860a", "blockroute singapore"],
-    ["0x89434FC3a09e583F2cb4e47A8B8fe58De8BE6a15", "blockroute virginia"],
-    ["0x10353562E662E333C0c2007400284e0e21cF74fF", "blockroute x"],
-    //      jetbldr
-    ["0x36CB523286D57680efBbfb417C63653115bCEBB5", "jetbldr ap"],
-    ["0x3aD6121407f6EDb65C8B2a518515D45863C206A8", "jetbldr eu"],
-    ["0x345324dC15F1CDcF9022E3B7F349e911fb823b4C", "jetbldr us"],
-    ["0xfd38358475078F81a45077f6e59dff8286e0dCA1", "jetbldr dublin"],
-    ["0x7F5fbFd8e2eB3160dF4c96757DEEf29E26F969a3", "jetbldr tokyo"],
-    ["0xA0Cde9891C6966fCe740817cc5576De2C669AB43", "jetbldr virginia"],
-    //      blockbus
-    ["0x3FC0c936c00908c07723ffbf2d536D6E0f62C3A4", "blockbus dublin"],
-    ["0x17e9F0D7E45A500f0148B29C6C98EfD19d95F138", "blockbus tokyo"],
-    ["0x1319Be8b8Ec4AA81f501924BdCF365fBcAa8d753", "blockbus virginia"],
-    //     txboost(blocksmith)
-    ["0x6Dddf681C908705472D09B1D7036B2241B50e5c7", "txboost ap"],
-    ["0x76736159984AE865a9b9Cc0Df61484A49dA68191", "txboost eu"],
-    ["0x5054b21D8baea3d602dca8761B235ee10bc0231E", "txboost us"],
-    //      darwin
-    ["0xa6d6086222812eFD5292fF284b0F7ff2a2B86Af4", "darwin ap"],
-    ["0x3265A3243ee84e667a73073504cA4CdeD1413D82", "darwin eu"],
-    ["0xdf11CD23992Fd48Cf2d245aC144010673275f285", "darwin us"],
-    //      inblock
-    ["0x9a3234b450518fadA098388B88e00deCAd96ad38", "inblock ap"],
-    ["0xb49f86586a840AB9920D2f340a85586E50FD30a2", "inblock eu"],
-    ["0x0F6D8b72F3687de6f2824903a83B3ba13c0e88A0", "inblock us"],
-    //      nodereal
-    ["0x79102dB16781ddDfF63F301C9Be557Fd1Dd48fA0", "nodereal ap-1"],
-    ["0x5B526b45e833704d84b5C2EB0F41323dA9466c48", "nodereal ap-2"],
-    ["0xd0d56b330a0dea077208b96910ce452fd77e1b6f", "nodereal eu-1"],
-    ["0xa547F87B2BADE689a404544859314CBC01f2605e", "nodereal eu-2"],
-    ["0x4f24ce4cd03a6503de97cf139af2c26347930b99", "nodereal us-1"],
-    ["0xFD3F1Ad459D585C50Cf4630649817C6E0cec7335", "nodereal us-2"],
-    //      xzbuilder
-    ["0x812720cb4639550D7BDb1d8F2be463F4a9663762", "xzbuilder"],
-
-    // Chapel
-    ["0x627fE6AFA2E84e461CB7AE7C2c46e8adf9a954a2", "txboost"],
-    ["0xa5559F1761e6dCa79Ac0c7A301CCDcC71D378fee", "nodereal ap"],
-    ["0x6C98EB21139F6E12db5b78a4AeD4d8eBA147FB7b", "nodereal eu"],
-    ["0x4E8cbf5912717B212db5b450ae7737455A5cc0aF", "nodereal us"],
-    ["0x4827b423D03a349b7519Dda537e9A28d31ecBB48", "club48 ap"],
-    ["0x48B2665E5E9a343409199D70F7495c8aB660BB48", "club48 eu"],
-    ["0x48B4bBEbF0655557A461e91B8905b85864B8BB48", "club48 us"],
-    ["0x0eAbBdE133fbF3c5eB2BEE6F7c8210deEAA0f7db", "blockrazor ap"],
-    ["0x95c8436143c82Ea4d3529A3ed8DDa9998F6daC5F", "blockrazor eu"],
-    ["0xb71Ba9e570ee20E983De1d5aE01baf5dCB4e4299", "blockrazor us"],
-    ["0x7b3ee856c98b1bb3689ef7f90477df2927fcbdb6",  "trustnet"],
-    ["0xA8caEc0D68a90Ac971EA1aDEFA1747447e1f9871",  "blockroute"],
-]);
-
-function getMappedAddressName(addressMap, address) {
-    if (!address) return undefined;
-    try {
-        const normalized = ethers.getAddress(address);
-        return addressMap.get(normalized) || addressMap.get(normalized.toLowerCase());
-    } catch (_) {
-        return addressMap.get(address);
-    }
-}
-
-async function getBlockMevInfo(blockNumber) {
-    let rpcInfo;
-    try {
-        rpcInfo = await provider.send("eth_getBlockMevInfo", ["0x" + blockNumber.toString(16)]);
-        if (rpcInfo) {
-            if (!rpcInfo.builder) {
-                return { ...rpcInfo, source: "local" };
-            }
-            const source = rpcInfo.version === "v2" ? "bidblock" : "bid";
-            return { ...rpcInfo, source };
-        }
-    } catch (_) {
-        // Older validators do not expose eth_getBlockMevInfo; fall back to the
-        // pre-BEP-675 payment-tx heuristic below.
-    }
-
-    const block = await provider.getBlock(blockNumber);
-    if (!block) return rpcInfo || { blockNumber, source: "local" };
-
-    const txHashes = block.transactions.slice(-4);
-    const txResults = await Promise.all(txHashes.map(txHash => provider.getTransaction(txHash)));
-    for (const txData of txResults) {
-        if (!txData || !txData.to || !getMappedAddressName(builderMap, txData.to)) continue;
-        return {
-            blockNumber: block.number,
-            blockHash: block.hash,
-            miner: block.miner,
-            source: "bid",
-            builder: txData.to,
-            fallback: true,
-        };
-    }
-
-    return {
-        ...(rpcInfo || {}),
-        blockNumber: rpcInfo ? (rpcInfo.blockNumber || block.number) : block.number,
-        blockHash: rpcInfo ? (rpcInfo.blockHash || block.hash) : block.hash,
-        miner: rpcInfo ? (rpcInfo.miner || block.miner) : block.miner,
-        source: "local",
-    };
-}
 
 // 1.cmd: "GetMaxTxCountInBlockRange", usage:
 // node getchainstatus.js GetMaxTxCountInBlockRange --rpc https://bsc-testnet-dataseed.bnbchain.org \
@@ -876,151 +743,6 @@ async function getEip7623() {
     console.log(`Script executed in: ${duration} seconds`);
 }
 
-// 10.cmd: "getMevStatus", usage:
-// node getchainstatus.js GetMevStatus \
-//      --rpc https://bsc-testnet-dataseed.bnbchain.org \
-//      --startNum(optional): default to last 100 blocks, the start block number to analyze
-//      --endNum(optional): default to latest block, the end block number to analyze
-// 
-// Description:
-// Analyzes MEV (Maximal Extractable Value) blocks in a given range and displays:
-// 1. Block-by-block information including:
-//    - Block number
-//    - Miner name (from validator set)
-//    - Builder information (if MEV block) or "local" (if non-MEV block)
-// 2. Statistics summary including:
-//    - Block range analyzed
-//    - Total number of blocks
-//    - Distribution of blocks by builder type (local, blockrazor, puissant, blockroute, txboost)
-//    - Percentage of each builder type
-//
-// Example:
-// # Analyze last 100 blocks (default)
-// node getchainstatus.js GetMevStatus --rpc https://bsc-testnet-dataseed.bnbchain.org
-//
-// # Analyze specific range
-// node getchainstatus.js GetMevStatus --rpc https://bsc-testnet-dataseed.bnbchain.org --startNum 40000001 --endNum 40000005
-//
-// # Analyze from specific block to latest
-// node getchainstatus.js GetMevStatus --rpc https://bsc-testnet-dataseed.bnbchain.org --startNum 40000001
-async function getMevStatus() {
-    let counts = {
-        local: 0,
-        ...Object.fromEntries([...new Set(builderMap.values())].map(builder => [builder, 0]))
-    };
-    // Per-type tallies for the MEV path breakdown (v1 = legacy SendBid, v2 = bidblock).
-    let typeCounts = { mev_v1: 0, mev_v2: 0, local: 0 };
-
-    // Get the latest block number
-    const latestBlock = await provider.getBlockNumber();
-    
-    // If startNum is not specified or is 0, use last 100 blocks
-    let startBlock = parseInt(program.startNum, 10);
-    if (isNaN(startBlock) || startBlock === 0) {
-        startBlock = Math.max(1, latestBlock - 99); // Ensure we don't go below block 1
-    }
-
-    // If endNum is not specified or is 0, use the latest block number
-    let endBlock = parseInt(program.endNum, 10);
-    if (isNaN(endBlock) || endBlock === 0) {
-        endBlock = latestBlock;
-    }
-
-    if (startBlock > endBlock) {
-        console.error("Invalid input, startBlock:", startBlock, " endBlock:", endBlock);
-        return;
-    }
-
-    const blockNumbers = [];
-    for (let i = startBlock; i <= endBlock; i++) {
-        blockNumbers.push(i);
-    }
-
-    let mevInfos;
-    try {
-        mevInfos = await Promise.all(blockNumbers.map(getBlockMevInfo));
-    } catch (err) {
-        console.error("GetMevStatus failed:", err.shortMessage || err.message || err);
-        return;
-    }
-
-    // Calculate max lengths for alignment with default values
-    let maxMinerLength = 10; // Default length
-    let maxBuilderLength = 20; // Default length
-
-    if (validatorMap.size > 0) {
-        const minerLengths = Array.from(validatorMap.values()).map(m => m[0].length);
-        maxMinerLength = Math.max(...minerLengths);
-    }
-
-    if (builderMap.size > 0) {
-        const builderLengths = Array.from(builderMap.values()).map(b => b.length);
-        maxBuilderLength = Math.max(...builderLengths);
-    }
-
-    for (const mevInfo of mevInfos) {
-        const blockNumber = typeof mevInfo.blockNumber === "string"
-            ? BigInt(mevInfo.blockNumber).toString()
-            : mevInfo.blockNumber.toString();
-        const minerInfo = getMappedAddressName(validatorMap, mevInfo.miner);
-        const miner = minerInfo ? minerInfo[0] : "Unknown";
-
-        if (mevInfo.source !== "local") {
-            const builderName = getMappedAddressName(builderMap, mevInfo.builder);
-            const friendlyName = builderName || mevInfo.builder;
-            const bucket = builderName || mevInfo.builder;
-            // v2 = bidblock (tagged), everything else on the MEV path = v1
-            // (tagged legacy bid, or heuristic-detected payBidTx which is v1-only).
-            const typeLabel = (mevInfo.source === "bidblock" || mevInfo.version === "v2") ? "mev_v2" : "mev_v1";
-            counts[bucket] = (counts[bucket] || 0) + 1;
-            typeCounts[typeLabel]++;
-            console.log(
-                `blockNum: ${blockNumber.padStart(8)}      ` +
-                `type: ${typeLabel.padEnd(6)}   ` +
-                `miner: ${miner.padEnd(maxMinerLength)}        ` +
-                `builder: (${friendlyName.padEnd(maxBuilderLength)}) ${mevInfo.builder}`
-            );
-            continue;
-        }
-
-        counts.local++;
-        typeCounts.local++;
-        console.log(
-            `blockNum: ${blockNumber.padStart(8)}      ` +
-            `type: ${"local".padEnd(6)}   ` +
-            `miner: ${miner.padEnd(maxMinerLength)}        ` +
-            `builder: local`
-        );
-    }
-
-    const total = endBlock - startBlock + 1;
-    console.log("\nMEV Statistics:");
-    console.log(`Range: [${startBlock}, ${endBlock}]`);
-    console.log(`Total Blocks: ${total}`);
-    console.log("\nBuilder Distribution:");
-    const localRatio = (counts.local * 100 / total).toFixed(2);
-    console.log(`${"local".padEnd(maxBuilderLength)}: ${counts.local.toString().padStart(3)} blocks (${localRatio}%)`);
-
-    Object.entries(counts)
-        .filter(([key, value]) => key !== "local" && value > 0)
-        .sort(([a], [b]) => a.localeCompare(b))
-        .forEach(([key, value]) => {
-            const ratio = (value * 100 / total).toFixed(2);
-            console.log(`${key.padEnd(maxBuilderLength)}: ${value.toString().padStart(3)} blocks (${ratio}%)`);
-        });
-
-    // MEV path breakdown: v1 (legacy SendBid) vs v2 (bidblock), as a share of MEV blocks.
-    const mevTotal = typeCounts.mev_v1 + typeCounts.mev_v2;
-    console.log("\nMEV Path Distribution:");
-    console.log(`MEV blocks: ${mevTotal} (${(mevTotal * 100 / total).toFixed(2)}% of total)`);
-    if (mevTotal > 0) {
-        const v1Ratio = (typeCounts.mev_v1 * 100 / mevTotal).toFixed(2);
-        const v2Ratio = (typeCounts.mev_v2 * 100 / mevTotal).toFixed(2);
-        console.log(`${"mev_v1".padEnd(8)}: ${typeCounts.mev_v1.toString().padStart(3)} blocks (${v1Ratio}% of MEV)`);
-        console.log(`${"mev_v2".padEnd(8)}: ${typeCounts.mev_v2.toString().padStart(3)} blocks (${v2Ratio}% of MEV)`);
-    }
-}
-
 // 11.cmd: "getLargeTxs", usage:
 // node getchainstatus.js GetLargeTxs \
 //      --rpc https://bsc-testnet-dataseed.bnbchain.org \
@@ -1169,8 +891,6 @@ const main = async () => {
         await getKeyParameters();
     } else if (cmd === "GetEip7623") {
         await getEip7623();
-    } else if (cmd === "GetMevStatus") {
-        await getMevStatus();
     } else if (cmd === "GetLargeTxs") {
         await getLargeTxs();
     } else {

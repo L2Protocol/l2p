@@ -40,7 +40,6 @@ import (
 	"github.com/ethereum/go-ethereum/core/systemcontracts"
 	"github.com/ethereum/go-ethereum/core/txpool"
 	"github.com/ethereum/go-ethereum/core/types"
-	buildertypes "github.com/ethereum/go-ethereum/core/types/builder"
 	"github.com/ethereum/go-ethereum/core/vm"
 	"github.com/ethereum/go-ethereum/event"
 	"github.com/ethereum/go-ethereum/log"
@@ -73,31 +72,15 @@ const (
 )
 
 var (
-	bidExistGauge        = metrics.NewRegisteredGauge("worker/bidExist", nil)
-	bidWinGauge          = metrics.NewRegisteredGauge("worker/bidWin", nil)
-	inturnBlocksGauge    = metrics.NewRegisteredGauge("worker/inturnBlocks", nil)
-	bestBidGasUsedGauge  = metrics.NewRegisteredGauge("worker/bestBidGasUsed", nil)  // MGas
-	bestWorkGasUsedGauge = metrics.NewRegisteredGauge("worker/bestWorkGasUsed", nil) // MGas
-	bidBlockExistGauge   = metrics.NewRegisteredGauge("worker/bidBlockExist", nil)
-	bidBlockWinGauge     = metrics.NewRegisteredGauge("worker/bidBlockWin", nil)
-	bidBlockCommitGauge  = metrics.NewRegisteredGauge("worker/bidBlockCommit", nil)
-	bidBlockGasUsedGauge = metrics.NewRegisteredGauge("worker/bidBlockGasUsed", nil) // MGas
-	bidBlockRevokeGauge  = metrics.NewRegisteredGauge("worker/bidBlockRevoke", nil)  // cumulative revoke count
-	// bidBlockVerifyFailedGauge counts sealed BidBlocks that failed async InsertChain verification (cumulative).
-	bidBlockVerifyFailedGauge = metrics.NewRegisteredGauge("worker/bidBlockVerifyFailed", nil)
-	// bidBlockRevokedBuildersGauge snapshots how many builders are revoked, taken at each revoke.
-	bidBlockRevokedBuildersGauge = metrics.NewRegisteredGauge("worker/bidBlockRevokedBuilders", nil)
-
 	writeBlockTimer      = metrics.NewRegisteredTimer("worker/writeblock", nil)
 	finalizeBlockTimer   = metrics.NewRegisteredTimer("worker/finalizeblock", nil)
 	pendingPlainTxsTimer = metrics.NewRegisteredTimer("worker/pendingPlainTxs", nil)
 	pendingBlobTxsTimer  = metrics.NewRegisteredTimer("worker/pendingBlobTxs", nil)
 
-	errBlockInterruptedByNewHead   = errors.New("new head arrived while building block")
-	errBlockInterruptedByRecommit  = errors.New("recommit interrupt while building block")
-	errBlockInterruptedByTimeout   = errors.New("timeout while building block")
-	errBlockInterruptedByOutOfGas  = errors.New("out of gas while building block")
-	errBlockInterruptedByBetterBid = errors.New("better bid arrived while building block")
+	errBlockInterruptedByNewHead  = errors.New("new head arrived while building block")
+	errBlockInterruptedByRecommit = errors.New("recommit interrupt while building block")
+	errBlockInterruptedByTimeout  = errors.New("timeout while building block")
+	errBlockInterruptedByOutOfGas = errors.New("out of gas while building block")
 )
 
 // environment is the worker's current environment and holds all
@@ -138,8 +121,6 @@ type task struct {
 	state    *state.StateDB
 	block    *types.Block
 
-	bidBlockInfo *bidBlockTaskInfo
-
 	createdAt     time.Time
 	miningStartAt time.Time
 }
@@ -155,7 +136,6 @@ const (
 	commitInterruptResubmit
 	commitInterruptTimeout
 	commitInterruptOutOfGas
-	commitInterruptBetterBid
 )
 
 // Block size is capped by the protocol at params.MaxBlockSize. When producing blocks, we
@@ -187,22 +167,14 @@ type getWorkReq struct {
 	result chan *newPayloadResult // non-blocking channel
 }
 
-type bidFetcher interface {
-	GetBestBid(parentHash common.Hash) *BidRuntime
-	GetSimulatingBid(prevBlockHash common.Hash) *BidRuntime
-	GetBestBidBlock(parentHash common.Hash) *buildertypes.DecodedBidBlock
-}
-
 // worker is the main object which takes care of submitting new work to consensus engine
 // and gathering the sealing result.
 type worker struct {
-	bidFetcher  bidFetcher
 	prefetcher  core.Prefetcher
 	config      *minerconfig.Config
 	chainConfig *params.ChainConfig
 	engine      consensus.Engine
 	eth         Backend
-	permMgr     *BidBlockPermissionManager
 	prio        []common.Address // A list of senders to prioritize
 	chain       *core.BlockChain
 
@@ -248,22 +220,15 @@ type worker struct {
 	resubmitHook func(time.Duration, time.Duration) // Method to call upon updating resubmitting interval.
 }
 
-func newWorker(config *minerconfig.Config, engine consensus.Engine, eth Backend, mux *event.TypeMux, permMgr *BidBlockPermissionManager) *worker {
-	if permMgr == nil {
-		permMgr = NewBidBlockPermissionManager()
-	}
+func newWorker(config *minerconfig.Config, engine consensus.Engine, eth Backend, mux *event.TypeMux) *worker {
 	chainConfig := eth.BlockChain().Config()
 	prefetcher := core.NewStatePrefetcher(chainConfig, eth.BlockChain().HeadChain())
-	if config.Mev.Enabled != nil && *config.Mev.Enabled {
-		prefetcher.EnableMevMode()
-	}
 	worker := &worker{
 		prefetcher:         prefetcher,
 		config:             config,
 		chainConfig:        chainConfig,
 		engine:             engine,
 		eth:                eth,
-		permMgr:            permMgr,
 		chain:              eth.BlockChain(),
 		mux:                mux,
 		coinbase:           config.Etherbase,
@@ -297,14 +262,6 @@ func newWorker(config *minerconfig.Config, engine consensus.Engine, eth Backend,
 	go worker.taskLoop()
 
 	return worker
-}
-
-func (w *worker) setBestBidFetcher(fetcher bidFetcher) {
-	w.bidFetcher = fetcher
-}
-
-func (w *worker) getPrefetcher() core.Prefetcher {
-	return w.prefetcher
 }
 
 // setEtherbase sets the etherbase used to initialize the block coinbase field.
@@ -594,12 +551,6 @@ func (w *worker) resultLoop() {
 			}
 
 			if !w.recordMinedBlock(block) {
-				continue
-			}
-
-			// BidBlock path: broadcast first, then InsertChain for async verification
-			if task.bidBlockInfo != nil {
-				w.handleBidBlockResult(block, task)
 				continue
 			}
 
@@ -1427,107 +1378,6 @@ LOOP:
 		}
 	}
 
-	// when out-turn, use bestWork to prevent bundle leakage.
-	// when in-turn, compare with remote work.
-	var bestBid *BidRuntime
-	var bestBidBlock *buildertypes.DecodedBidBlock
-	var bidBlockCommitted bool
-	var bidBlockFallback bool
-	var simBidBlockReward *uint256.Int
-	var simBidValidatorReward *uint256.Int
-	var localValidatorReward *uint256.Int
-	if w.bidFetcher != nil && bestWork.header.Difficulty.Cmp(diffInTurn) == 0 {
-		inturnBlocksGauge.Inc(1)
-		localValidatorReward = new(uint256.Int).Mul(bestReward, uint256.NewInt(*w.config.Mev.ValidatorCommission))
-		localValidatorReward.Div(localValidatorReward, uint256.NewInt(10000))
-
-		// We want to start sealing the block as late as possible here if mev is enabled, so we could give builder the chance to send their final bid.
-		// Time left till sealing the block.
-		tillSealingTime := time.Until(time.UnixMilli(int64(bestWork.header.MilliTimestamp()))) - *w.config.DelayLeftOver
-		if tillSealingTime > 0 {
-			// Still some time left, wait for the best bid.
-			// This happens during the peak time of the network, the local block building LOOP would break earlier than
-			// the final sealing time by meeting the errBlockInterruptedByOutOfGas criteria.
-
-			log.Info("commitWork local building finished, wait for the best bid", "tillSealingTime", common.PrettyDuration(tillSealingTime))
-			stopTimer.Reset(tillSealingTime)
-			select {
-			case <-stopTimer.C:
-			case <-interruptCh:
-				log.Debug("commitWork interruptCh closed, new block imported or resubmit triggered")
-				return
-			}
-		}
-
-		// Stage 1 candidate A — legacy SendBid (simBid).
-		bestBid = w.bidFetcher.GetBestBid(bestWork.header.ParentHash)
-		if bestBid != nil {
-			bidExistGauge.Inc(1)
-			bestBidGasUsedGauge.Update(int64(bestBid.bid.GasUsed) / 1_000_000)
-			bestWorkGasUsedGauge.Update(int64(bestWork.header.GasUsed) / 1_000_000)
-			simBidBlockReward = uint256.MustFromBig(bestBid.packedBlockReward)
-			simBidValidatorReward = uint256.MustFromBig(bestBid.packedValidatorReward)
-		}
-
-		// Stage 1 candidate B — SendBidBlock.
-		bestBidBlock = w.bidFetcher.GetBestBidBlock(parentHash)
-		if bestBidBlock != nil {
-			bidBlockExistGauge.Inc(1)
-		}
-	}
-
-	if bestBidBlock != nil && w.selectBidBlock(bestBidBlock, simBidBlockReward, simBidValidatorReward, bestReward) {
-		bidBlockWinGauge.Inc(1)
-		task, err := w.prepareBidBlockTask(bestBidBlock, start)
-		if err != nil {
-			log.Error("Failed to prepare bid block, fallback",
-				"builder", bestBidBlock.Builder,
-				"err", err)
-			bidBlockFallback = true
-		} else {
-			systemTxCount := len(bestBidBlock.Txs) - bestBidBlock.SystemTxStart
-			w.enqueueBidBlockTask(task, systemTxCount)
-			bidBlockCommitted = true
-			bidBlockCommitGauge.Inc(1)
-			bidBlockGasUsedGauge.Update(int64(bestBidBlock.Header.GasUsed) / 1_000_000)
-			bestWorkGasUsedGauge.Update(int64(bestWork.header.GasUsed) / 1_000_000)
-		}
-	}
-
-	if bidBlockCommitted {
-		if w.current != nil {
-			w.current.discard()
-			w.current = nil
-		}
-		return
-	}
-
-	// simBid fallback. Re-runs the legacy dual-threshold gate against simBid
-	// whenever no BidBlock is being committed.
-	if bestBid != nil {
-		if bestReward.Cmp(simBidBlockReward) < 0 &&
-			localValidatorReward.Cmp(simBidValidatorReward) < 0 {
-			bidWinGauge.Inc(1)
-			if bestBid.greedyMerged {
-				greedyMergeOnchainCounter.Inc(1)
-			}
-			bestWork = bestBid.env
-			// Record MEV v1 (bid path) source and builder address.
-			setBidMevInfo(bestWork.header, bestBid.bid.Builder, false)
-			logMsg := "[BUILDER BLOCK]"
-			if bidBlockFallback {
-				logMsg = "[BUILDER BLOCK] (simBid fallback)"
-			}
-			log.Info(logMsg,
-				"block", bestWork.header.Number.Uint64(),
-				"builder", bestBid.bid.Builder,
-				"blockReward", weiToEtherStringF6(simBidBlockReward.ToBig()),
-				"validatorReward", weiToEtherStringF6(simBidValidatorReward.ToBig()),
-				"bid", bestBid.bid.Hash().TerminalString(),
-			)
-		}
-	}
-
 	w.commit(bestWork, w.fullTaskHook, start)
 
 	// Swap out the old work with the new one, terminating any leftover
@@ -1657,8 +1507,6 @@ func signalToErr(signal int32) error {
 		return errBlockInterruptedByTimeout
 	case commitInterruptOutOfGas:
 		return errBlockInterruptedByOutOfGas
-	case commitInterruptBetterBid:
-		return errBlockInterruptedByBetterBid
 	default:
 		panic(fmt.Errorf("undefined signal %d", signal))
 	}

@@ -33,7 +33,6 @@ import (
 	"github.com/ethereum/go-ethereum/core/filtermaps"
 	"github.com/ethereum/go-ethereum/core/state"
 	"github.com/ethereum/go-ethereum/core/types"
-	buildertypes "github.com/ethereum/go-ethereum/core/types/builder"
 	"github.com/ethereum/go-ethereum/core/vm"
 	"github.com/ethereum/go-ethereum/ethdb"
 	"github.com/ethereum/go-ethereum/event"
@@ -422,24 +421,6 @@ func (b *backendMock) Engine() consensus.Engine { return nil }
 
 func (b *backendMock) CurrentValidators() ([]common.Address, error) { return []common.Address{}, nil }
 
-func (b *backendMock) MevRunning() bool                       { return false }
-func (b *backendMock) HasBuilder(builder common.Address) bool { return false }
-func (b *backendMock) GetBidBlockPermission(builder common.Address) buildertypes.BidBlockPermissionStatus {
-	return buildertypes.BidBlockPermissionStatus{}
-}
-func (b *backendMock) MevParams() *buildertypes.MevParams {
-	return &buildertypes.MevParams{}
-}
-func (b *backendMock) StartMev()                                                  {}
-func (b *backendMock) StopMev()                                                   {}
-func (b *backendMock) AddBuilder(builder common.Address, builderUrl string) error { return nil }
-func (b *backendMock) RemoveBuilder(builder common.Address) error                 { return nil }
-func (b *backendMock) SendBid(ctx context.Context, bid *buildertypes.BidArgs) (common.Hash, error) {
-	panic("implement me")
-}
-func (b *backendMock) SendBidBlock(ctx context.Context, args *buildertypes.BidBlockArgs) (common.Hash, error) {
-	panic("implement me")
-}
 func (b *backendMock) MinerInTurn() bool                            { return false }
 func (b *backendMock) CurrentView() *filtermaps.ChainView           { return nil }
 func (b *backendMock) NewMatcherBackend() filtermaps.MatcherBackend { return nil }

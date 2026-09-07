@@ -24,7 +24,6 @@ import (
 	"os"
 	"strings"
 
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/rlp"
@@ -141,8 +140,4 @@ func (api *AdminAPI) ImportChain(file string) (bool, error) {
 		blocks = blocks[:0]
 	}
 	return true, nil
-}
-
-func (api *AdminAPI) SetBidBlockPermission(builder common.Address, allowed bool) {
-	api.eth.Miner().SetBidBlockPermission(builder, allowed)
 }

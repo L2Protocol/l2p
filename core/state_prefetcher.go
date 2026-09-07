@@ -37,9 +37,8 @@ const checkInterval = 10
 // from disk. Transactions are executed in parallel to fully leverage the
 // SSD's read performance.
 type statePrefetcher struct {
-	config     *params.ChainConfig // Chain configuration options
-	chain      *HeaderChain        // Canonical block chain
-	mevEnabled bool                // Indicate whether MEV is enabled
+	config *params.ChainConfig // Chain configuration options
+	chain  *HeaderChain        // Canonical block chain
 }
 
 // NewStatePrefetcher initialises a new statePrefetcher.
@@ -48,11 +47,6 @@ func NewStatePrefetcher(config *params.ChainConfig, chain *HeaderChain) *statePr
 		config: config,
 		chain:  chain,
 	}
-}
-
-// EnableMevMode enables MEV mode for this prefetcher.
-func (p *statePrefetcher) EnableMevMode() {
-	p.mevEnabled = true
 }
 
 // Prefetch processes the state changes according to the Ethereum rules by running
@@ -141,11 +135,7 @@ func (p *statePrefetcher) PrefetchMining(txs TransactionsByPriceAndNonce, header
 		signer = types.MakeSigner(p.config, header.Number, header.Time)
 	)
 
-	// When MEV is not enabled, use more threads for local mining
-	threadCount := prefetchMiningThread
-	if !p.mevEnabled {
-		threadCount = max(prefetchMiningThread, 3*runtime.NumCPU()/5)
-	}
+	threadCount := max(prefetchMiningThread, 3*runtime.NumCPU()/5)
 
 	txCh := make(chan *types.Transaction, 2*threadCount)
 	for i := 0; i < threadCount; i++ {

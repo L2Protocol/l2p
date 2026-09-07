@@ -54,13 +54,10 @@ type Miner struct {
 	stopCh  chan struct{}
 	worker  *worker
 
-	bidSimulator *bidSimulator
-
 	wg sync.WaitGroup
 }
 
 func New(eth Backend, config *minerconfig.Config, mux *event.TypeMux, engine consensus.Engine) *Miner {
-	bidBlockPermMgr := NewBidBlockPermissionManager()
 	miner := &Miner{
 		mux:     mux,
 		eth:     eth,
@@ -68,11 +65,8 @@ func New(eth Backend, config *minerconfig.Config, mux *event.TypeMux, engine con
 		exitCh:  make(chan struct{}),
 		startCh: make(chan struct{}),
 		stopCh:  make(chan struct{}),
-		worker:  newWorker(config, engine, eth, mux, bidBlockPermMgr),
+		worker:  newWorker(config, engine, eth, mux),
 	}
-
-	miner.bidSimulator = newBidSimulator(&config.Mev, config.DelayLeftOver, config.GasPrice, eth, eth.BlockChain().Config(), engine, miner.worker)
-	miner.worker.setBestBidFetcher(miner.bidSimulator)
 
 	miner.wg.Add(1)
 	go miner.update()
@@ -108,7 +102,6 @@ func (miner *Miner) update() {
 			case downloader.StartEvent:
 				wasMining := miner.Mining()
 				miner.worker.stop()
-				miner.bidSimulator.stop()
 				canStart = false
 				if wasMining {
 					// Resume mining after sync was finished
@@ -121,7 +114,6 @@ func (miner *Miner) update() {
 				canStart = true
 				if shouldStart {
 					miner.worker.start()
-					miner.bidSimulator.start()
 				}
 				miner.worker.syncing.Store(false)
 
@@ -129,7 +121,6 @@ func (miner *Miner) update() {
 				canStart = true
 				if shouldStart {
 					miner.worker.start()
-					miner.bidSimulator.start()
 				}
 				miner.worker.syncing.Store(false)
 
@@ -139,16 +130,13 @@ func (miner *Miner) update() {
 		case <-miner.startCh:
 			if canStart {
 				miner.worker.start()
-				miner.bidSimulator.start()
 			}
 			shouldStart = true
 		case <-miner.stopCh:
 			shouldStart = false
 			miner.worker.stop()
-			miner.bidSimulator.stop()
 		case <-miner.exitCh:
 			miner.worker.close()
-			miner.bidSimulator.close()
 			return
 		}
 	}

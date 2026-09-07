@@ -867,171 +867,7 @@ func isUnsignedTx(tx *types.Transaction) bool {
 	return v.Sign() == 0 && r.Sign() == 0 && s.Sign() == 0
 }
 
-// TestParliaFinalizeAndAssembleBidBlock verifies BidBlock assembly emits unsigned system txs.
-func TestParliaFinalizeAndAssembleBidBlock(t *testing.T) {
-	frdir := t.TempDir()
-	db, err := rawdb.NewDatabaseWithFreezer(rawdb.NewMemoryDatabase(), frdir, "", false)
-	if err != nil {
-		t.Fatalf("failed to create database with ancient backend: %v", err)
-	}
-
-	trieDB := triedb.NewDatabase(db, nil)
-	defer trieDB.Close()
-
-	config := params.ParliaTestChainConfig
-	gspec := &core.Genesis{
-		Config: config,
-		Alloc:  types.GenesisAlloc{testAddr: {Balance: new(big.Int).SetUint64(10 * params.Ether)}},
-	}
-	mockEngine := &mockParlia{}
-	genesisBlock := gspec.MustCommit(db, trieDB)
-	chain, _ := core.NewBlockChain(db, gspec, mockEngine, nil)
-	defer chain.Stop()
-	parents, _ := core.GenerateChain(config, genesisBlock, mockEngine, db, 1, nil)
-	parent := parents[0]
-	rawdb.WriteBlock(db, parent)
-
-	engine := New(config, db, nil, genesisBlock.Hash())
-	validatorKey, err := crypto.GenerateKey()
-	if err != nil {
-		t.Fatalf("failed to generate key: %v", err)
-	}
-	validator := crypto.PubkeyToAddress(validatorKey.PublicKey)
-	engine.Authorize(validator, nil, func(account accounts.Account, tx *types.Transaction, chainID *big.Int) (*types.Transaction, error) {
-		if account.Address != validator {
-			return nil, fmt.Errorf("unexpected signing account %s", account.Address)
-		}
-		return types.SignTx(tx, types.LatestSigner(config), validatorKey)
-	})
-
-	gasFee := uint256.NewInt(12345)
-	newHeader := func() *types.Header {
-		return &types.Header{
-			ParentHash: parent.Hash(),
-			Number:     new(big.Int).Add(parent.Number(), common.Big1),
-			Coinbase:   validator,
-			Difficulty: new(big.Int).Set(diffInTurn),
-			GasLimit:   params.SystemTxsGasHardLimit,
-			Time:       parent.Time() + 1,
-		}
-	}
-	newState := func() *state.StateDB {
-		stateDB, err := state.New(parent.Root(), state.NewDatabase(trieDB, nil))
-		if err != nil {
-			t.Fatalf("failed to create stateDB: %v", err)
-		}
-		stateDB.SetBalance(consensus.SystemAddress, new(uint256.Int).Set(gasFee), tracing.BalanceChangeUnspecified)
-		return stateDB
-	}
-
-	signedBlock, signedReceipts, err := engine.FinalizeAndAssemble(chain, newHeader(), newState(), &types.Body{}, nil, nil)
-	if err != nil {
-		t.Fatalf("failed to finalize signed block: %v", err)
-	}
-	unsignedBlock, unsignedReceipts, err := engine.FinalizeAndAssembleBidBlock(chain, newHeader(), newState(), &types.Body{}, nil, nil)
-	if err != nil {
-		t.Fatalf("failed to finalize BidBlock: %v", err)
-	}
-
-	if signedBlock.Root() != unsignedBlock.Root() {
-		t.Fatalf("state root mismatch: signed=%s unsigned=%s", signedBlock.Root(), unsignedBlock.Root())
-	}
-	if signedBlock.ReceiptHash() != unsignedBlock.ReceiptHash() {
-		t.Fatalf("receipt hash mismatch: signed=%s unsigned=%s", signedBlock.ReceiptHash(), unsignedBlock.ReceiptHash())
-	}
-	if signedBlock.Bloom() != unsignedBlock.Bloom() {
-		t.Fatalf("receipt bloom mismatch")
-	}
-	if signedBlock.GasUsed() != unsignedBlock.GasUsed() {
-		t.Fatalf("gas used mismatch: signed=%d unsigned=%d", signedBlock.GasUsed(), unsignedBlock.GasUsed())
-	}
-	if len(signedBlock.Transactions()) == 0 || len(unsignedBlock.Transactions()) == 0 {
-		t.Fatalf("expected system transactions in both finalized blocks")
-	}
-	if isUnsignedTx(signedBlock.Transactions()[0]) {
-		t.Fatalf("expected default finalize path to sign system txs")
-	}
-	if !isUnsignedTx(unsignedBlock.Transactions()[0]) {
-		t.Fatalf("expected BidBlock assembly to keep system txs unsigned")
-	}
-	if len(signedReceipts) != len(unsignedReceipts) {
-		t.Fatalf("receipt count mismatch: signed=%d unsigned=%d", len(signedReceipts), len(unsignedReceipts))
-	}
-}
-
-func TestParliaFinalizeAndAssembleBidBlockRewardsHeaderCoinbase(t *testing.T) {
-	frdir := t.TempDir()
-	db, err := rawdb.NewDatabaseWithFreezer(rawdb.NewMemoryDatabase(), frdir, "", false)
-	if err != nil {
-		t.Fatalf("failed to create database with ancient backend: %v", err)
-	}
-
-	trieDB := triedb.NewDatabase(db, nil)
-	defer trieDB.Close()
-
-	config := params.ParliaTestChainConfig
-	gspec := &core.Genesis{
-		Config: config,
-		Alloc:  types.GenesisAlloc{testAddr: {Balance: new(big.Int).SetUint64(10 * params.Ether)}},
-	}
-	mockEngine := &mockParlia{}
-	genesisBlock := gspec.MustCommit(db, trieDB)
-	chain, _ := core.NewBlockChain(db, gspec, mockEngine, nil)
-	defer chain.Stop()
-	parents, _ := core.GenerateChain(config, genesisBlock, mockEngine, db, 1, nil)
-	parent := parents[0]
-	rawdb.WriteBlock(db, parent)
-
-	engine := New(config, db, nil, genesisBlock.Hash())
-	localValidator := common.HexToAddress("0x1000000000000000000000000000000000000001")
-	blockCoinbase := common.HexToAddress("0x2000000000000000000000000000000000000002")
-	engine.Authorize(localValidator, nil, nil)
-
-	header := &types.Header{
-		ParentHash: parent.Hash(),
-		Number:     new(big.Int).Add(parent.Number(), common.Big1),
-		Coinbase:   blockCoinbase,
-		Difficulty: new(big.Int).Set(diffInTurn),
-		GasLimit:   params.SystemTxsGasHardLimit,
-		Time:       parent.Time() + 1,
-	}
-	stateDB, err := state.New(parent.Root(), state.NewDatabase(trieDB, nil))
-	if err != nil {
-		t.Fatalf("failed to create stateDB: %v", err)
-	}
-	stateDB.SetBalance(consensus.SystemAddress, uint256.NewInt(12345), tracing.BalanceChangeUnspecified)
-
-	block, _, err := engine.FinalizeAndAssembleBidBlock(chain, header, stateDB, &types.Body{}, nil, nil)
-	if err != nil {
-		t.Fatalf("failed to finalize BidBlock: %v", err)
-	}
-
-	wantDeposit, err := engine.validatorSetABI.Pack("deposit", blockCoinbase)
-	if err != nil {
-		t.Fatalf("failed to pack expected deposit: %v", err)
-	}
-	wrongDeposit, err := engine.validatorSetABI.Pack("deposit", localValidator)
-	if err != nil {
-		t.Fatalf("failed to pack wrong deposit: %v", err)
-	}
-	var found bool
-	for _, tx := range block.Transactions() {
-		if tx.To() == nil || *tx.To() != common.HexToAddress(systemcontracts.ValidatorContract) {
-			continue
-		}
-		if bytes.Equal(tx.Data(), wrongDeposit) {
-			t.Fatalf("deposit reward routed to local p.val %s, want header coinbase %s", localValidator, blockCoinbase)
-		}
-		if bytes.Equal(tx.Data(), wantDeposit) {
-			found = true
-		}
-	}
-	if !found {
-		t.Fatalf("missing deposit reward for header coinbase %s", blockCoinbase)
-	}
-}
-
-func TestParliaPrepareForBidBlock(t *testing.T) {
+func TestParliaPrepareExtraData(t *testing.T) {
 	frdir := t.TempDir()
 	db, err := rawdb.NewDatabaseWithFreezer(rawdb.NewMemoryDatabase(), frdir, "", false)
 	if err != nil {
@@ -1064,12 +900,6 @@ func TestParliaPrepareForBidBlock(t *testing.T) {
 		t.Fatalf("failed to get in-turn validator: %v", err)
 	}
 	validatorEngine.Authorize(inturnValidator, nil, nil)
-	builderEngine := New(config, db, nil, genesisBlock.Hash())
-	if inturnValidator == testAddr {
-		builderEngine.Authorize(otherValidator, nil, nil)
-	} else {
-		builderEngine.Authorize(testAddr, nil, nil)
-	}
 
 	newHeader := func() *types.Header {
 		return &types.Header{
@@ -1079,40 +909,12 @@ func TestParliaPrepareForBidBlock(t *testing.T) {
 		}
 	}
 	validatorHeader := newHeader()
-	builderHeader := newHeader()
 
 	if err := validatorEngine.Prepare(chain, validatorHeader); err != nil {
 		t.Fatalf("failed to prepare validator header: %v", err)
 	}
-	if err := builderEngine.PrepareForBidBlock(chain, builderHeader); err != nil {
-		t.Fatalf("failed to prepare BidBlock header: %v", err)
-	}
-
-	if builderHeader.Coinbase != validatorHeader.Coinbase {
-		t.Fatalf("coinbase mismatch: builder=%s validator=%s", builderHeader.Coinbase, validatorHeader.Coinbase)
-	}
-	if builderHeader.Coinbase != inturnValidator {
-		t.Fatalf("builder coinbase mismatch: have %s want %s", builderHeader.Coinbase, inturnValidator)
-	}
-	// Prepare and PrepareForBidBlock share the prepare() core, so headers
-	// prepared back-to-back land on the same blockTimeForRamanujanFork output.
-	// Allow one 50ms quantum of tolerance for the rare case where the two
-	// calls straddle a wall-clock alignment tick.
-	diff := int64(builderHeader.MilliTimestamp()) - int64(validatorHeader.MilliTimestamp())
-	if diff < 0 {
-		diff = -diff
-	}
-	if diff > 50 {
-		t.Fatalf("builder/validator time diverge by %dms: builder=%d validator=%d",
-			diff, builderHeader.MilliTimestamp(), validatorHeader.MilliTimestamp())
-	}
-	if builderHeader.Difficulty.Cmp(validatorHeader.Difficulty) != 0 {
-		t.Fatalf("difficulty mismatch: builder=%s validator=%s", builderHeader.Difficulty, validatorHeader.Difficulty)
-	}
-	// BidBlock prepare must produce a byte-identical Extra to the normal validator
-	// prepare (length-equal is too weak: a wrong forkhash/vanity byte would slip through).
-	if !bytes.Equal(builderHeader.Extra, validatorHeader.Extra) {
-		t.Fatalf("extra mismatch:\n builder   =%x\n validator =%x", builderHeader.Extra, validatorHeader.Extra)
+	if validatorHeader.Coinbase != inturnValidator {
+		t.Fatalf("coinbase mismatch: have %s want %s", validatorHeader.Coinbase, inturnValidator)
 	}
 
 	// SetExtraData branch checks on a non-epoch header (no validator-set contract call):

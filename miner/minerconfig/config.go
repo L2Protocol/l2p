@@ -34,29 +34,7 @@ var (
 
 	defaultGasCeil = uint64(55_000_000)
 	// Extra time for finalizing and committing blocks (excludes writing to disk).
-	defaultDelayLeftOver         = 15 * time.Millisecond
-	defaultBidSimulationLeftOver = 20 * time.Millisecond
-)
-
-func getDefaultNoInterruptLeftOver() *time.Duration {
-	expectedProcessingSpeed := 500_000_000 // For estimation, assume 500 Mgas/s
-	bidProcessing := float64(defaultGasCeil) / float64(expectedProcessingSpeed)
-	buffer := 10 * time.Millisecond
-	noInterruptLeftOver := time.Duration(bidProcessing*float64(time.Second)) + buffer + defaultDelayLeftOver
-
-	return &noInterruptLeftOver
-}
-
-// Other default MEV-related configurations
-var (
-	defaultMevEnabled          = false
-	defaultGreedyMergeTx       = true
-	defaultBuilderFeeCeil      = "0"
-	defaultValidatorCommission = uint64(100)
-	defaultMaxBidsPerBuilder   = uint32(2) // Simple strategy: send one bid early, another near deadline
-	// MEV validators accept SendBidBlock by default; the RPC stays gated on the
-	// Pasteur fork and can be disabled via Mev.BidBlockEnabled=false.
-	defaultBidBlockEnabled = true
+	defaultDelayLeftOver = 15 * time.Millisecond
 )
 
 // Config is the configuration parameters of mining.
@@ -71,8 +49,6 @@ type Config struct {
 	VoteEnable             bool           // Whether to vote when mining
 	MaxWaitProposalInSecs  *uint64        `toml:",omitempty"` // The maximum time to wait for the proposal to be done, it's aimed to prevent validator being slashed when restarting
 	DisableVoteAttestation bool           // Whether to skip assembling vote attestation
-
-	Mev MevConfig // Mev configuration
 }
 
 // DefaultConfig contains default settings for miner.
@@ -89,39 +65,6 @@ var DefaultConfig = Config{
 	// The default value is set to 45 seconds.
 	// Because the avg restart time in mainnet could be 30+ seconds, so the node try to wait for the next multi-proposals to be done.
 	MaxWaitProposalInSecs: &defaultMaxWaitProposalInSecs,
-
-	Mev: DefaultMevConfig,
-}
-
-type BuilderConfig struct {
-	Address common.Address
-	URL     string
-}
-
-type MevConfig struct {
-	Enabled               *bool           `toml:",omitempty"` // Whether to enable Mev or not
-	BidBlockEnabled       *bool           `toml:",omitempty"` // Whether to accept SendBidBlock RPC (BEP-675); coexists with legacy SendBid
-	GreedyMergeTx         *bool           `toml:",omitempty"` // Whether to merge local transactions to the bid
-	BuilderFeeCeil        *string         `toml:",omitempty"` // The maximum builder fee of a bid
-	SentryURL             string          // The url of Mev sentry
-	Builders              []BuilderConfig // The list of builders
-	ValidatorCommission   *uint64         `toml:",omitempty"` // 100 means the validator claims 1% from block reward
-	BidSimulationLeftOver *time.Duration  `toml:",omitempty"`
-	NoInterruptLeftOver   *time.Duration  `toml:",omitempty"`
-	MaxBidsPerBuilder     *uint32         `toml:",omitempty"` // Maximum number of bids allowed per builder per block
-}
-
-var DefaultMevConfig = MevConfig{
-	Enabled:               &defaultMevEnabled,
-	BidBlockEnabled:       &defaultBidBlockEnabled,
-	GreedyMergeTx:         &defaultGreedyMergeTx,
-	BuilderFeeCeil:        &defaultBuilderFeeCeil,
-	SentryURL:             "",
-	Builders:              nil,
-	ValidatorCommission:   &defaultValidatorCommission,
-	BidSimulationLeftOver: &defaultBidSimulationLeftOver,
-	NoInterruptLeftOver:   getDefaultNoInterruptLeftOver(),
-	MaxBidsPerBuilder:     &defaultMaxBidsPerBuilder,
 }
 
 func ApplyDefaultMinerConfig(cfg *Config) {
@@ -142,39 +85,5 @@ func ApplyDefaultMinerConfig(cfg *Config) {
 	if cfg.Recommit == nil {
 		cfg.Recommit = &defaultRecommit
 		log.Info("ApplyDefaultMinerConfig", "Recommit", *cfg.Recommit)
-	}
-
-	// check [Eth.Miner.Mev]
-	if cfg.Mev.Enabled == nil {
-		cfg.Mev.Enabled = &defaultMevEnabled
-		log.Info("ApplyDefaultMinerConfig", "Mev.Enabled", *cfg.Mev.Enabled)
-	}
-	if cfg.Mev.BidBlockEnabled == nil {
-		cfg.Mev.BidBlockEnabled = &defaultBidBlockEnabled
-		log.Info("ApplyDefaultMinerConfig", "Mev.BidBlockEnabled", *cfg.Mev.BidBlockEnabled)
-	}
-	if cfg.Mev.BuilderFeeCeil == nil {
-		cfg.Mev.BuilderFeeCeil = &defaultBuilderFeeCeil
-		log.Info("ApplyDefaultMinerConfig", "Mev.BuilderFeeCeil", *cfg.Mev.BuilderFeeCeil)
-	}
-	if cfg.Mev.GreedyMergeTx == nil {
-		cfg.Mev.GreedyMergeTx = &defaultGreedyMergeTx
-		log.Info("ApplyDefaultMinerConfig", "Mev.GreedyMergeTx", *cfg.Mev.GreedyMergeTx)
-	}
-	if cfg.Mev.ValidatorCommission == nil {
-		cfg.Mev.ValidatorCommission = &defaultValidatorCommission
-		log.Info("ApplyDefaultMinerConfig", "Mev.ValidatorCommission", *cfg.Mev.ValidatorCommission)
-	}
-	if cfg.Mev.BidSimulationLeftOver == nil {
-		cfg.Mev.BidSimulationLeftOver = &defaultBidSimulationLeftOver
-		log.Info("ApplyDefaultMinerConfig", "Mev.BidSimulationLeftOver", *cfg.Mev.BidSimulationLeftOver)
-	}
-	if cfg.Mev.NoInterruptLeftOver == nil {
-		cfg.Mev.NoInterruptLeftOver = getDefaultNoInterruptLeftOver()
-		log.Info("ApplyDefaultMinerConfig", "Mev.NoInterruptLeftOver", *cfg.Mev.NoInterruptLeftOver)
-	}
-	if cfg.Mev.MaxBidsPerBuilder == nil {
-		cfg.Mev.MaxBidsPerBuilder = &defaultMaxBidsPerBuilder
-		log.Info("ApplyDefaultMinerConfig", "Mev.MaxBidsPerBuilder", *cfg.Mev.MaxBidsPerBuilder)
 	}
 }

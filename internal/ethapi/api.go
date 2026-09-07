@@ -42,7 +42,6 @@ import (
 	"github.com/ethereum/go-ethereum/core/state"
 	"github.com/ethereum/go-ethereum/core/tracing"
 	"github.com/ethereum/go-ethereum/core/types"
-	buildertypes "github.com/ethereum/go-ethereum/core/types/builder"
 	"github.com/ethereum/go-ethereum/core/vm"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/eth/gasestimator"
@@ -538,49 +537,6 @@ func (api *BlockChainAPI) GetBlockByHash(ctx context.Context, hash common.Hash, 
 		return api.rpcMarshalBlock(ctx, block, true, fullTx)
 	}
 	return nil, err
-}
-
-// BlockMevInfo describes a block's MEV builder attribution.
-// Version "v1" means legacy SendBid; version "v2" means BEP-675 SendBidBlock.
-// Local-mined blocks omit Builder and Version.
-type BlockMevInfo struct {
-	BlockNumber hexutil.Uint64  `json:"blockNumber"`
-	BlockHash   common.Hash     `json:"blockHash"`
-	Miner       common.Address  `json:"miner"`
-	Version     string          `json:"version,omitempty"`
-	Builder     *common.Address `json:"builder,omitempty"`
-}
-
-// GetBlockMevInfo returns the MEV builder attribution for the given block.
-func (api *BlockChainAPI) GetBlockMevInfo(ctx context.Context, blockNrOrHash rpc.BlockNumberOrHash) (*BlockMevInfo, error) {
-	header, err := api.b.HeaderByNumberOrHash(ctx, blockNrOrHash)
-	if err != nil {
-		return nil, err
-	}
-	if header == nil {
-		return nil, errors.New("block not found")
-	}
-	info := &BlockMevInfo{
-		BlockNumber: hexutil.Uint64(header.Number.Uint64()),
-		BlockHash:   header.Hash(),
-		Miner:       header.Coinbase,
-	}
-	if header.RequestsHash == nil {
-		return info, nil
-	}
-	version, builder, ok := buildertypes.DecodeBlockMevInfo(*header.RequestsHash)
-	if !ok {
-		return info, nil
-	}
-	switch version {
-	case buildertypes.BlockMevInfoVersionBid:
-		info.Version = "v1"
-	case buildertypes.BlockMevInfoVersionBidBlock:
-		info.Version = "v2"
-	}
-	b := builder
-	info.Builder = &b
-	return info, nil
 }
 
 func (api *BlockChainAPI) Health() bool {
