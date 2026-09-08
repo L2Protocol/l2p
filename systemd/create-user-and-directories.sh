@@ -25,7 +25,7 @@ geth --datadir /var/lib/geth \
   --history.logs 0 \
   --history.state 0 \
   --history.transactions 0 \
-  init genesis.json
+  init ./genesis.json
 
   #Validator node
   geth --datadir /var/lib/geth \
@@ -40,4 +40,6 @@ geth --datadir /var/lib/geth \
   --history.logs 0 \
   --history.state 0 \
   --history.transactions 0 \
-  init genesis.json
+  init ./genesis.json
+
+  chown geth:geth -R /var/lib/geth
