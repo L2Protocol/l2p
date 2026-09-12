@@ -2032,11 +2032,6 @@ func (p *Parlia) initContract(state vm.StateDB, header *types.Header, chain core
 	contracts := []string{
 		systemcontracts.ValidatorContract,
 		systemcontracts.SlashContract,
-		systemcontracts.LightClientContract,
-		systemcontracts.RelayerHubContract,
-		systemcontracts.TokenHubContract,
-		systemcontracts.RelayerIncentivizeContract,
-		systemcontracts.CrossChainContract,
 	}
 	// get packed data
 	data, err := p.validatorSetABI.Pack(method)
