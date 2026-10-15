@@ -21,15 +21,15 @@ import "github.com/ethereum/go-ethereum/common"
 // MainnetBootnodes are the enode URLs of the P2P bootstrap nodes running on
 // the L2P mainnet.
 var MainnetBootnodes = []string{
-	"enode://fa7ab5cf291659f3615665a27cd623255a9d6c92edcf50395940ae86be1f7414310f0ecd5b5c22b09e56fc1f49b8e79d35f2bf5165b963aacb5619e0a6032dbe@212.95.41.176:31398",
+	"enode://fa7ab5cf291659f3615665a27cd623255a9d6c92edcf50395940ae86be1f7414310f0ecd5b5c22b09e56fc1f49b8e79d35f2bf5165b963aacb5619e0a6032dbe@95.211.63.128:31398",
 	"enode://79b5e81a8162616b81fa076c501d3380fac47807eaa5a4c5068fdd8f531d7652fbb940f88d8d1df4e67c8eb0bdcb91c9b2efda468749116f31770ea700abff21@212.95.41.175:31398",
-	"enode://cdebca373c4e5bb737182abcf0e536ac40485be777f19a85e0d900b1f3ebf9b61efdb6d4addfcf1d4d660aaacccca42b3ba330e31f569aa3f539b8e1993f2eb0@212.95.41.173:31398",
+	"enode://cdebca373c4e5bb737182abcf0e536ac40485be777f19a85e0d900b1f3ebf9b61efdb6d4addfcf1d4d660aaacccca42b3ba330e31f569aa3f539b8e1993f2eb0@23.80.80.90:31398",
 }
 
 var V5Bootnodes = []string{
-	"enr:-Iu4QNGXIXHIZazZBSnNqQBNn3GLydTHUtPptuaCC9cgEf1UAPbfk4J95hf25CV1AcX7GkdIgj1FXPv4gojSC-OTAd-AgmlkgnY0gmlwhNRfKbCJc2VjcDI1NmsxoQL6erXPKRZZ82FWZaJ81iMlWp1sku3PUDlZQK6Gvh90FIN0Y3CCeqaDdWRwgnqm",
-	"enr:-Iu4QCnPl_YmwknpIOOYpSTxtTIEjFcYbb0CKekXmSBH61SCTErLBryOmVpsqrT-FZenlnVqR1NbC9w3DMobeyOwcjSAgmlkgnY0gmlwhNRfKa-Jc2VjcDI1NmsxoQN5tegagWJha4H6B2xQHTOA-sR4B-qlpMUGj92PUx12UoN0Y3CCeqaDdWRwgnqm",
-	"enr:-Iu4QB_rRS7mbVbtQb1GxP3RYsimIfKk6A5iyvBdIXPCmKiyV6fClUwLhvo2FR4bzoNZ44lYQcf-NSEF7AuTOu7OcZSAgmlkgnY0gmlwhNRfKa2Jc2VjcDI1NmsxoQLN68o3PE5btzcYKrzw5TasQEhb53fxmoXg2QCx8-v5toN0Y3CCeqaDdWRwgnqm",
+	"enode://fa7ab5cf291659f3615665a27cd623255a9d6c92edcf50395940ae86be1f7414310f0ecd5b5c22b09e56fc1f49b8e79d35f2bf5165b963aacb5619e0a6032dbe@95.211.63.128:31398",
+	"enode://79b5e81a8162616b81fa076c501d3380fac47807eaa5a4c5068fdd8f531d7652fbb940f88d8d1df4e67c8eb0bdcb91c9b2efda468749116f31770ea700abff21@212.95.41.175:31398",
+	"enode://cdebca373c4e5bb737182abcf0e536ac40485be777f19a85e0d900b1f3ebf9b61efdb6d4addfcf1d4d660aaacccca42b3ba330e31f569aa3f539b8e1993f2eb0@23.80.80.90:31398",
 }
 
 const dnsPrefix = "enrtree://AP6MZV3RNCCTYM3EEM5YRAMWT4L53A4H4YTHGDH4HD2O3AOR4N6LK@"
