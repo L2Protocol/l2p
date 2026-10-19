@@ -28,7 +28,7 @@ import (
 
 // Genesis hashes to enforce below configs on.
 var (
-	MainnetGenesisHash = common.HexToHash("0x4baeda339fd88a7bff2e7e92c6528300ef2abb2edc02eb8da6b88d58f4481e9d")
+	MainnetGenesisHash = common.HexToHash("0x6a00db7b79db36a6c4cc7d49d1b8a6b18a27a7c8b51df77198eba6c280bb39df")
 )
 
 func newUint64(val uint64) *uint64 { return &val }
@@ -61,17 +61,17 @@ var (
 		BerlinBlock:         big.NewInt(8),
 		LondonBlock:         big.NewInt(8),
 		HertzBlock:          big.NewInt(8),
-		ShanghaiTime:        newUint64(1788865200),
-		KeplerTime:          newUint64(1788865200),
-		FeynmanTime:         newUint64(1788865300),
-		CancunTime:          newUint64(1788865400),
-		HaberTime:           newUint64(1788865400),
-		BohrTime:            newUint64(1788865420),
-		PragueTime:          newUint64(1788865430),
-		LorentzTime:         newUint64(1788865440),
+		ShanghaiTime:        newUint64(1792411200),
+		KeplerTime:          newUint64(1792411200),
+		FeynmanTime:         newUint64(1792411300),
+		CancunTime:          newUint64(1792411400),
+		HaberTime:           newUint64(1792411400),
+		BohrTime:            newUint64(1792411420),
+		PragueTime:          newUint64(1792411430),
+		LorentzTime:         newUint64(1792411440),
 		MaxwellTime:         nil,
 		FermiTime:           nil,
-		OsakaTime:           newUint64(1788865450),
+		OsakaTime:           newUint64(1792411450),
 
 		Parlia: &ParliaConfig{},
 		BlobScheduleConfig: &BlobScheduleConfig{
