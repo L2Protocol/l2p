@@ -32,3 +32,8 @@ EnableMsgEvents = false
 
 [Ethstats]
 URL = "<your-node-name>:<your-node-secret>@l2stats.dev"
+
+[Metrics]
+Enabled = true
+HTTP = "127.0.0.1"
+Port = 6060
